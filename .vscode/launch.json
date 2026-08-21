@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "sukonlanat_portfolio",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": [
+                "--dart-define-from-file",
+                "config.prod.json"
+            ],
+            "args": [
+                "--web-port=61836",
+                "--web-launch-url=http://localhost:61836/?id=262e697c-2d20-4a61-bc94-0680b0fbf50b"
+            ]
+        },
+        {
+            "name": "sukonlanat_portfolio (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "toolArgs": [
+                "--dart-define-from-file",
+                "config.prod.json"
+            ]
+        },
+        {
+            "name": "sukonlanat_portfolio (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "toolArgs": [
+                "--dart-define-from-file",
+                "config.prod.json"
+            ]
+        }
+    ]
+}
