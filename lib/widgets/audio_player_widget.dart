@@ -44,12 +44,11 @@ class _AudioPlayerState extends State<AudioPlayerWidget> {
         });
       });
 
-      // Browsers block autoplay until the user interacts with the page.
-      // Native platforms can start playback automatically.
       if (!kIsWeb) {
         await _audioPlayer.play();
       }
-      await _audioPlayer.setVolume(0.5);
+
+      await _audioPlayer.setVolume(0.3);
     } catch (e) {
       debugPrint('Stream Error: $e');
     }
@@ -77,8 +76,8 @@ class _AudioPlayerState extends State<AudioPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 10,
-      right: 10,
+      top: 70,
+      left: 10,
       child: SafeArea(
         child: Card(
           color: Colors.white.withValues(alpha: 0.85),
@@ -95,12 +94,10 @@ class _AudioPlayerState extends State<AudioPlayerWidget> {
                   Row(
                     children: [
                       IconButton(
-                        tooltip: 'Track Info',
                         onPressed: () => setState(() => _showInfo = !_showInfo),
                         icon: const Icon(Icons.info_outline),
                       ),
                       IconButton(
-                        tooltip: _isPlaying ? 'Pause' : 'Play',
                         onPressed: () => _togglePlay(),
                         icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
                       ),
