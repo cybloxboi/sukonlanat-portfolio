@@ -63,9 +63,12 @@ class _BackgroundVideoState extends State<BackgroundVideo> {
                     ? 0.8
                     : 0.2,
               ),
-              child: Image.asset(
-                'assets/images/background.png',
-                fit: BoxFit.cover,
+              child: Opacity(
+                opacity: 0.6,
+                child: Image.asset(
+                  'assets/images/background.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
