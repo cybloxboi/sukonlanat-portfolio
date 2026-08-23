@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sukonlanat_portfolio/data/certificate_catalog.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
 import 'package:sukonlanat_portfolio/widgets/markdown_reader.dart';
@@ -80,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuButton<String>(
                   tooltip: 'Menu',
                   icon: const Icon(Icons.list_rounded, color: Colors.black),
-                  onSelected: (value) => context.push('/$value'),
+                  onSelected: (value) => context.go('/$value'),
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: 'certificates',
@@ -98,28 +99,28 @@ class _HomePageState extends State<HomePage> {
               ]
             : [
                 TextButton(
-                  onPressed: () => context.push('/certificates'),
+                  onPressed: () => context.go('/certificates'),
                   child: const Text(
                     'Certificates',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/projects'),
+                  onPressed: () => context.go('/projects'),
                   child: const Text(
                     'Projects',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/activities'),
+                  onPressed: () => context.go('/activities'),
                   child: const Text(
                     'Activites',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/about_me'),
+                  onPressed: () => context.go('/about_me'),
                   child: const Text(
                     'About Me',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -288,7 +289,7 @@ class _HomePageState extends State<HomePage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     spacing: 32,
                     children: [
@@ -317,11 +318,21 @@ class _HomePageState extends State<HomePage> {
                               ),
                               FilledButton(
                                 onPressed: () {
-                                  context.push('/certificates');
+                                  context.go('/certificates');
                                 },
                                 child: Text('ดูทั้งหมด'),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 32,
+                            runSpacing: 32,
+                            children: List.generate(
+                              certificateCatalog.length,
+                              (index) => _buildCertificateCard(context, index),
+                            ),
                           ),
                         ],
                       ),
@@ -350,7 +361,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               FilledButton(
                                 onPressed: () {
-                                  context.push('/projects');
+                                  context.go('/projects');
                                 },
                                 child: Text('ดูทั้งหมด'),
                               ),
@@ -383,7 +394,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               FilledButton(
                                 onPressed: () {
-                                  context.push('/activities');
+                                  context.go('/activities');
                                 },
                                 child: Text('ดูทั้งหมด'),
                               ),
@@ -428,6 +439,104 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildCertificateCard(BuildContext context, int index) {
+    final certificate = certificateCatalog[index];
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          context.go('/certificates/${certificate.id}?from=home');
+        },
+        child: SizedBox(
+          width: 320,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  SizedBox(
+                    height: 180,
+                    width: double.infinity,
+                    child: ColoredBox(
+                      color: Colors.black12,
+                      child: Image.network(
+                        certificate.backgroundUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 48,
+                            ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Text(
+                          certificate.name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        const Divider(),
+                        const SizedBox(height: 4),
+                        Text(
+                          certificate.description,
+                          maxLines: 3,
+                          style: TextStyle(fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Positioned(
+                top: 10,
+                right: 10,
+                child: Icon(Icons.star_rounded, color: Colors.yellow),
+              ),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Chip(
+                      label: Text(
+                        certificate.awardCategories.name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                        ),
+                      ),
+                      backgroundColor: certificate.awardCategories.color,
+                    ),
+                    SizedBox(height: 4),
+                    Chip(
+                      label: Text(
+                        certificate.competitionLevel.name,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                        ),
+                      ),
+                      backgroundColor: certificate.competitionLevel.color,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStat(String title, int value, BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -445,7 +554,7 @@ class _HomePageState extends State<HomePage> {
         Text(
           value.toString(),
           style: TextStyle(
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(context).colorScheme.primary,
             fontSize: 30,
             fontWeight: FontWeight.bold,
           ),

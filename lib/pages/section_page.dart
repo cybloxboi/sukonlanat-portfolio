@@ -6,10 +6,12 @@ class SectionPage extends StatelessWidget {
     super.key,
     required this.title,
     required this.description,
+    this.selectedCertificate,
   });
 
   final String title;
   final String description;
+  final String? selectedCertificate;
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +33,7 @@ class SectionPage extends StatelessWidget {
           ),
         ),
         leading: IconButton(
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
+          onPressed: () => context.go('/'),
           icon: const Icon(Icons.arrow_back),
         ),
         actions: isNarrowScreen
@@ -45,7 +41,7 @@ class SectionPage extends StatelessWidget {
                 PopupMenuButton<String>(
                   tooltip: 'Menu',
                   icon: const Icon(Icons.list_rounded, color: Colors.black),
-                  onSelected: (value) => context.push('/$value'),
+                  onSelected: (value) => context.go('/$value'),
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: 'certificates',
@@ -63,28 +59,28 @@ class SectionPage extends StatelessWidget {
               ]
             : [
                 TextButton(
-                  onPressed: () => context.push('/certificates'),
+                  onPressed: () => context.go('/certificates'),
                   child: const Text(
                     'Certificates',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/projects'),
+                  onPressed: () => context.go('/projects'),
                   child: const Text(
                     'Projects',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/activities'),
+                  onPressed: () => context.go('/activities'),
                   child: const Text(
                     'Activites',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/about_me'),
+                  onPressed: () => context.go('/about_me'),
                   child: const Text(
                     'About Me',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -94,10 +90,23 @@ class SectionPage extends StatelessWidget {
               ],
       ),
       body: Center(
-        child: Text(
-          description,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24),
+            ),
+            if (selectedCertificate != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                'ข้อมูล Certificate ที่ส่งมา: ${selectedCertificate!}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ],
+          ],
         ),
       ),
     );
