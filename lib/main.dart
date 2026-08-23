@@ -46,12 +46,12 @@ class _MainAppState extends State<MainApp> {
       key: state.pageKey,
       child: child,
       transitionDuration: const Duration(milliseconds: 300),
-      reverseTransitionDuration: const Duration(milliseconds: 200),
+      reverseTransitionDuration: const Duration(milliseconds: 300),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final pageAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,
-          reverseCurve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
         );
         final previousPageAnimation = CurvedAnimation(
           parent: secondaryAnimation,
