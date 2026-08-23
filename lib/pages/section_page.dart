@@ -13,6 +13,8 @@ class SectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -32,6 +34,58 @@ class SectionPage extends StatelessWidget {
           onPressed: () => context.go('/'),
           icon: const Icon(Icons.arrow_back),
         ),
+        actions: isNarrowScreen
+            ? [
+                PopupMenuButton<String>(
+                  tooltip: 'Menu',
+                  icon: const Icon(Icons.list_rounded, color: Colors.black),
+                  onSelected: (value) => context.go('/$value'),
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'certificates',
+                      child: Text('Certificates'),
+                    ),
+                    PopupMenuItem(value: 'projects', child: Text('Projects')),
+                    PopupMenuItem(
+                      value: 'activities',
+                      child: Text('Activites'),
+                    ),
+                    PopupMenuItem(value: 'about_me', child: Text('About Me')),
+                  ],
+                ),
+                const SizedBox(width: 8),
+              ]
+            : [
+                TextButton(
+                  onPressed: () => context.go('/certificates'),
+                  child: const Text(
+                    'Certificates',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.go('/projects'),
+                  child: const Text(
+                    'Projects',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.go('/activities'),
+                  child: const Text(
+                    'Activites',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.go('/about_me'),
+                  child: const Text(
+                    'About Me',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
       ),
       body: Center(
         child: Text(

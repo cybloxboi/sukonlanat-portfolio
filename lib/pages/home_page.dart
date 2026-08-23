@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
+import 'package:sukonlanat_portfolio/widgets/university_intro_video.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, this.universityId});
@@ -12,6 +14,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    _loadUniversityData();
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.universityId != widget.universityId) {
+      _loadUniversityData();
+    }
+  }
+
+  void _loadUniversityData() {
+    universityDataController.load(widget.universityId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
@@ -108,43 +128,137 @@ class _HomePageState extends State<HomePage> {
         centerTitle: false,
         backgroundColor: Colors.white10.withAlpha(120),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: 101,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return SizedBox(
-                    height: MediaQuery.sizeOf(context).height,
-                    child: Wrap(
-                      children: [
-                        FetchUniversityData(universityId: widget.universityId),
-                      ],
-                    ),
-                  );
-                }
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.sizeOf(context).height,
+                ),
+                child: Wrap(children: [FetchUniversityData()]),
+              ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final crossAxisCount = constraints.maxWidth >= 800
+                      ? 3
+                      : constraints.maxWidth >= 500
+                      ? 2
+                      : 1;
+                  const spacing = 35.0;
+                  final itemWidth = crossAxisCount == 3
+                      ? (constraints.maxWidth - spacing * 2) / 3
+                      : crossAxisCount == 2
+                      ? (constraints.maxWidth - spacing) / 2
+                      : constraints.maxWidth;
 
-                return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    'Item $index',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                );
-              },
-            ),
+                  return Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: [
+                      SizedBox(
+                        width: itemWidth,
+                        height: 120,
+                        child: _buildStat('Certificates', 10, context),
+                      ),
+                      SizedBox(
+                        width: itemWidth,
+                        height: 120,
+                        child: _buildStat('Projects', 10, context),
+                      ),
+                      SizedBox(
+                        width: itemWidth,
+                        height: 120,
+                        child: _buildStat('Activities', 10, context),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 50),
+              const Divider(color: Colors.white),
+              const SizedBox(height: 50),
+              AnimatedBuilder(
+                animation: universityDataController,
+                builder: (context, _) {
+                  final introduceLink = universityDataController.introduceLink;
+                  if (introduceLink == null) return const SizedBox.shrink();
+
+                  return Column(
+                    children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  style: DefaultTextStyle.of(context).style
+                                      .copyWith(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                  children: [
+                                    const TextSpan(
+                                      text: 'คลิปวิดีโอแนะนำตัวสาขา ',
+                                    ),
+                                    TextSpan(
+                                      text: universityDataController.degreeName,
+                                      style: TextStyle(
+                                        color: universityDataController.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 800,
+                                ),
+                                child: UniversityIntroVideo(url: introduceLink),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 50),
+            ],
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildStat(String title, int value, BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          value.toString(),
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }

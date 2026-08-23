@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sukonlanat_portfolio/pages/home_page.dart';
 import 'package:sukonlanat_portfolio/pages/section_page.dart';
+import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/audio_player_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/background_video.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -23,8 +24,19 @@ void main() async {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    universityDataController.loadFromUri();
+  }
 
   static CustomTransitionPage<void> _transitionPage(
     GoRouterState state,

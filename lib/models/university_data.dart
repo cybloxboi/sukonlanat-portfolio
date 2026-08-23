@@ -7,6 +7,7 @@ class UniversityData {
     required this.color,
     this.degreeName,
     this.projectName,
+    this.introduceLink,
   });
 
   final String name;
@@ -14,4 +15,5 @@ class UniversityData {
   final Color color;
   final String? degreeName;
   final String? projectName;
+  final String? introduceLink;
 }

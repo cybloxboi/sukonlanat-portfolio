@@ -139,8 +139,15 @@ class _AudioPlayerState extends State<AudioPlayerWidget> {
                                   child: Row(
                                     children: [
                                       Image.network(
-                                        'https://cdn.prod.website-files.com/62a0a0168756b795debc65bc/69ef2abb9234e119f18b3687_Cloudmark%20Minimum%20size.webp',
-                                        height: 10,
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? 'https://cdn.prod.website-files.com/62a0a0168756b795debc65bc/69ef2abb9234e119f18b3687_Cloudmark%20Minimum%20size.webp'
+                                            : 'https://cdn.prod.website-files.com/62a0a0168756b795debc65bc/69ef2abbddd3c1d881b88ae0_Favicon%20Colors%20black%20(transparent)%20-%20download.webp',
+                                        height:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? 10
+                                            : 35,
                                       ),
                                       const SizedBox(width: 8),
                                       Text('Listen on SoundCloud'),
