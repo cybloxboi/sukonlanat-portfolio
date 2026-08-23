@@ -32,6 +32,7 @@ class UniversityDataController extends ChangeNotifier {
   String? get projectName => _data.projectName;
   String? get introduceLink => _data.introduceLink;
   String? get universityId => _universityId;
+  String? get sop => _data.sop;
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
   bool get hasUniversity => _data != emptyData;
@@ -82,7 +83,7 @@ class UniversityDataController extends ChangeNotifier {
       final response = await Supabase.instance.client
           .from('universities')
           .select(
-            'name, short_name, color_hex, degree_name, project_name, introduce_link',
+            'name, short_name, color_hex, degree_name, project_name, introduce_link, sop',
           )
           .eq('id', id)
           .maybeSingle();
@@ -105,6 +106,7 @@ class UniversityDataController extends ChangeNotifier {
         degreeName: _asNullableString(response['degree_name']),
         projectName: _asNullableString(response['project_name']),
         introduceLink: _asNullableString(response['introduce_link']),
+        sop: _asNullableString(response['sop']),
       );
 
       _cache[id] = university;

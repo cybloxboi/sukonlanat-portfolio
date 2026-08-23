@@ -12,7 +12,7 @@ class BackgroundVideo extends StatefulWidget {
 
 class _BackgroundVideoState extends State<BackgroundVideo> {
   late final VideoPlayerController _controller;
-  bool _videoReady = false;
+  bool _videoInitialized = false;
 
   @override
   void initState() {
@@ -28,10 +28,12 @@ class _BackgroundVideoState extends State<BackgroundVideo> {
   Future<void> _initializeVideo() async {
     try {
       await _controller.initialize();
+
+      if (!mounted) return;
+      setState(() => _videoInitialized = true);
+
       await _controller.setLooping(true);
       await _controller.setVolume(0);
-      if (!mounted) return;
-      setState(() => _videoReady = true);
       await _controller.play();
     } catch (error) {
       debugPrint('Background video error: $error');
@@ -46,16 +48,33 @@ class _BackgroundVideoState extends State<BackgroundVideo> {
 
   @override
   Widget build(BuildContext context) {
-    final videoSize = _videoReady ? _controller.value.size : Size.zero;
+    final videoSize = _videoInitialized ? _controller.value.size : Size.zero;
 
     return Stack(
       fit: StackFit.expand,
       children: [
         IgnorePointer(
           child: AnimatedOpacity(
-            opacity: _videoReady ? 1 : 0,
+            opacity: _videoInitialized ? 0 : 1,
             duration: const Duration(milliseconds: 1200),
-            child: _videoReady
+            child: Container(
+              color: Colors.black.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.8
+                    : 0.2,
+              ),
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+        IgnorePointer(
+          child: AnimatedOpacity(
+            opacity: _videoInitialized ? 1 : 0,
+            duration: const Duration(milliseconds: 1200),
+            child: _videoInitialized
                 ? Container(
                     color: Colors.black.withValues(
                       alpha: Theme.of(context).brightness == Brightness.dark

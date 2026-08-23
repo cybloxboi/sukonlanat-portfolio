@@ -46,35 +46,36 @@ class _MainAppState extends State<MainApp> {
       key: state.pageKey,
       child: child,
       transitionDuration: const Duration(milliseconds: 300),
-      reverseTransitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final incomingAnimation = CurvedAnimation(
+        final pageAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,
-          reverseCurve: Curves.easeInCubic,
+          reverseCurve: Curves.easeOutCubic,
         );
-        final outgoingAnimation = CurvedAnimation(
+        final previousPageAnimation = CurvedAnimation(
           parent: secondaryAnimation,
           curve: Curves.easeInCubic,
+          reverseCurve: Curves.easeOutCubic,
         );
 
         return FadeTransition(
-          opacity: incomingAnimation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.05, 0),
-              end: Offset.zero,
-            ).animate(incomingAnimation),
-            child: ScaleTransition(
-              scale: Tween<double>(
-                begin: 0.985,
-                end: 1,
-              ).animate(incomingAnimation),
-              child: FadeTransition(
-                opacity: Tween<double>(
-                  begin: 1,
-                  end: 0,
-                ).animate(outgoingAnimation),
+          opacity: Tween<double>(
+            begin: 1,
+            end: 0,
+          ).animate(previousPageAnimation),
+          child: FadeTransition(
+            opacity: pageAnimation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.05, 0),
+                end: Offset.zero,
+              ).animate(pageAnimation),
+              child: ScaleTransition(
+                scale: Tween<double>(
+                  begin: 0.985,
+                  end: 1,
+                ).animate(pageAnimation),
                 child: child,
               ),
             ),

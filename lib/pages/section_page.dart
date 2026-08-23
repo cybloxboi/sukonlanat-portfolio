@@ -31,7 +31,13 @@ class SectionPage extends StatelessWidget {
           ),
         ),
         leading: IconButton(
-          onPressed: () => context.go('/'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
           icon: const Icon(Icons.arrow_back),
         ),
         actions: isNarrowScreen
@@ -39,7 +45,7 @@ class SectionPage extends StatelessWidget {
                 PopupMenuButton<String>(
                   tooltip: 'Menu',
                   icon: const Icon(Icons.list_rounded, color: Colors.black),
-                  onSelected: (value) => context.go('/$value'),
+                  onSelected: (value) => context.push('/$value'),
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: 'certificates',
@@ -57,28 +63,28 @@ class SectionPage extends StatelessWidget {
               ]
             : [
                 TextButton(
-                  onPressed: () => context.go('/certificates'),
+                  onPressed: () => context.push('/certificates'),
                   child: const Text(
                     'Certificates',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/projects'),
+                  onPressed: () => context.push('/projects'),
                   child: const Text(
                     'Projects',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/activities'),
+                  onPressed: () => context.push('/activities'),
                   child: const Text(
                     'Activites',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/about_me'),
+                  onPressed: () => context.push('/about_me'),
                   child: const Text(
                     'About Me',
                     style: TextStyle(fontWeight: FontWeight.bold),

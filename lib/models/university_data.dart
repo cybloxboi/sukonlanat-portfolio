@@ -8,6 +8,7 @@ class UniversityData {
     this.degreeName,
     this.projectName,
     this.introduceLink,
+    this.sop,
   });
 
   final String name;
@@ -16,4 +17,5 @@ class UniversityData {
   final String? degreeName;
   final String? projectName;
   final String? introduceLink;
+  final String? sop;
 }

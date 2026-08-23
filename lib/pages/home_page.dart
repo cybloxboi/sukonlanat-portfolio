@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
+import 'package:sukonlanat_portfolio/widgets/markdown_reader.dart';
 import 'package:sukonlanat_portfolio/widgets/university_intro_video.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, this.universityId});
@@ -78,7 +80,7 @@ class _HomePageState extends State<HomePage> {
                 PopupMenuButton<String>(
                   tooltip: 'Menu',
                   icon: const Icon(Icons.list_rounded, color: Colors.black),
-                  onSelected: (value) => context.go('/$value'),
+                  onSelected: (value) => context.push('/$value'),
                   itemBuilder: (context) => const [
                     PopupMenuItem(
                       value: 'certificates',
@@ -96,28 +98,28 @@ class _HomePageState extends State<HomePage> {
               ]
             : [
                 TextButton(
-                  onPressed: () => context.go('/certificates'),
+                  onPressed: () => context.push('/certificates'),
                   child: const Text(
                     'Certificates',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/projects'),
+                  onPressed: () => context.push('/projects'),
                   child: const Text(
                     'Projects',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/activities'),
+                  onPressed: () => context.push('/activities'),
                   child: const Text(
                     'Activites',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.go('/about_me'),
+                  onPressed: () => context.push('/about_me'),
                   child: const Text(
                     'About Me',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -139,6 +141,9 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Wrap(children: [FetchUniversityData()]),
               ),
+              const SizedBox(height: 50),
+              const Divider(color: Colors.white),
+              const SizedBox(height: 50),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final crossAxisCount = constraints.maxWidth >= 800
@@ -160,17 +165,14 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       SizedBox(
                         width: itemWidth,
-                        height: 120,
                         child: _buildStat('Certificates', 10, context),
                       ),
                       SizedBox(
                         width: itemWidth,
-                        height: 120,
                         child: _buildStat('Projects', 10, context),
                       ),
                       SizedBox(
                         width: itemWidth,
-                        height: 120,
                         child: _buildStat('Activities', 10, context),
                       ),
                     ],
@@ -184,49 +186,239 @@ class _HomePageState extends State<HomePage> {
                 animation: universityDataController,
                 builder: (context, _) {
                   final introduceLink = universityDataController.introduceLink;
-                  if (introduceLink == null) return const SizedBox.shrink();
 
                   return Column(
                     children: [
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  style: DefaultTextStyle.of(context).style
-                                      .copyWith(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                      Wrap(
+                        spacing: 32,
+                        runSpacing: 32,
+                        children: [
+                          if (introduceLink != null)
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 600),
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    children: [
+                                      RichText(
+                                        textAlign: TextAlign.center,
+                                        text: TextSpan(
+                                          style: DefaultTextStyle.of(context)
+                                              .style
+                                              .copyWith(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                          children: [
+                                            const TextSpan(
+                                              text:
+                                                  'คลิปวิดีโอแนะนำตัวหลักสูตร ',
+                                            ),
+                                            TextSpan(
+                                              text: universityDataController
+                                                  .degreeName,
+                                              style: TextStyle(
+                                                color: universityDataController
+                                                    .color,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                  children: [
-                                    const TextSpan(
-                                      text: 'คลิปวิดีโอแนะนำตัวสาขา ',
-                                    ),
-                                    TextSpan(
-                                      text: universityDataController.degreeName,
-                                      style: TextStyle(
-                                        color: universityDataController.color,
-                                      ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+                                      UniversityIntroVideo(url: introduceLink),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 800,
+                            ),
+                          if (universityDataController.sop != null)
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: 600),
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'สาเหตุที่อยากเข้าศึกษา',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Divider(),
+                                      const SizedBox(height: 8),
+                                      MarkdownReader(
+                                        url: universityDataController.sop!,
+                                        strongColor:
+                                            universityDataController.color,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                child: UniversityIntroVideo(url: introduceLink),
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                        ],
+                      ),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          if (universityDataController.introduceLink != null ||
+                              universityDataController.sop != null) {
+                            return Column(
+                              children: [
+                                const SizedBox(height: 50),
+                                const Divider(color: Colors.white),
+                                const SizedBox(height: 50),
+                              ],
+                            );
+                          }
+
+                          return SizedBox.shrink();
+                        },
                       ),
                     ],
                   );
                 },
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    spacing: 32,
+                    children: [
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                spacing: 8,
+                                children: [
+                                  Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.yellow,
+                                    size: 50,
+                                  ),
+                                  Text(
+                                    'Top Certificates',
+                                    style: TextStyle(
+                                      fontSize: 30,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              FilledButton(
+                                onPressed: () {
+                                  context.push('/certificates');
+                                },
+                                child: Text('ดูทั้งหมด'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                spacing: 8,
+                                children: [
+                                  Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.yellow,
+                                    size: 50,
+                                  ),
+                                  Text(
+                                    'Top Projects',
+                                    style: TextStyle(
+                                      fontSize: 30,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              FilledButton(
+                                onPressed: () {
+                                  context.push('/projects');
+                                },
+                                child: Text('ดูทั้งหมด'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                spacing: 8,
+                                children: [
+                                  Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.yellow,
+                                    size: 50,
+                                  ),
+                                  Text(
+                                    'Top Activities',
+                                    style: TextStyle(
+                                      fontSize: 30,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              FilledButton(
+                                onPressed: () {
+                                  context.push('/activities');
+                                },
+                                child: Text('ดูทั้งหมด'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              const Divider(color: Colors.white),
+              const SizedBox(height: 50),
+              Text(
+                'Made with ❤︎⁠ by Sukonlanat Thawonfung',
+                style: TextStyle(color: Colors.white),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final uri = Uri.parse(
+                    'https://github.com/cybloxboi/sukonlanat-portfolio',
+                  );
+
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
+                  }
+                },
+                child: Text(
+                  'Source Code (GitHub)',
+                  style: TextStyle(
+                    color: Colors.white,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
               ),
               const SizedBox(height: 50),
             ],
