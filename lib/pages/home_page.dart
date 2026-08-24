@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sukonlanat_portfolio/data/certificate_catalog.dart';
+import 'package:sukonlanat_portfolio/models/certificate_model.dart';
+import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
 import 'package:sukonlanat_portfolio/widgets/markdown_reader.dart';
+import 'package:sukonlanat_portfolio/widgets/top_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/university_intro_video.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,9 +19,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late Future<List<CertificateModel>> _certificatesFuture;
+  late Future<List<CertificateModel>> _featuredCertificatesFuture;
+
   @override
   void initState() {
     super.initState();
+    final repository = CertificateRepository();
+    _certificatesFuture = repository.fetchCertificates();
+    _featuredCertificatesFuture = repository.fetchFeaturedCertificates();
     _loadUniversityData();
   }
 
@@ -166,7 +174,14 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       SizedBox(
                         width: itemWidth,
-                        child: _buildStat('Certificates', 10, context),
+                        child: FutureBuilder<List<CertificateModel>>(
+                          future: _certificatesFuture,
+                          builder: (context, snapshot) => _buildStat(
+                            'Certificates',
+                            snapshot.data?.length ?? 0,
+                            context,
+                          ),
+                        ),
                       ),
                       SizedBox(
                         width: itemWidth,
@@ -244,11 +259,29 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.all(16),
                                   child: Column(
                                     children: [
-                                      Text(
-                                        'สาเหตุที่อยากเข้าศึกษา',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                      RichText(
+                                        textAlign: TextAlign.center,
+                                        text: TextSpan(
+                                          style: DefaultTextStyle.of(context)
+                                              .style
+                                              .copyWith(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                          children: [
+                                            const TextSpan(
+                                              text:
+                                                  'สาเหตุที่อยากเข้าศึกษาต่อในหลักสูตร ',
+                                            ),
+                                            TextSpan(
+                                              text: universityDataController
+                                                  .degreeName,
+                                              style: TextStyle(
+                                                color: universityDataController
+                                                    .color,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       const SizedBox(height: 8),
@@ -295,110 +328,24 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                spacing: 8,
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    color: Colors.yellow,
-                                    size: 50,
-                                  ),
-                                  Text(
-                                    'Top Certificates',
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              FilledButton(
-                                onPressed: () {
-                                  context.go('/certificates');
-                                },
-                                child: Text('ดูทั้งหมด'),
-                              ),
-                            ],
+                          TopWidget(
+                            text: 'Top Certificates',
+                            path: '/certificates',
                           ),
                           const SizedBox(height: 16),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 32,
-                            runSpacing: 32,
-                            children: List.generate(
-                              certificateCatalog.length,
-                              (index) => _buildCertificateCard(context, index),
-                            ),
-                          ),
+                          _buildCertificatesSection(context),
                         ],
                       ),
                       Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                spacing: 8,
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    color: Colors.yellow,
-                                    size: 50,
-                                  ),
-                                  Text(
-                                    'Top Projects',
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              FilledButton(
-                                onPressed: () {
-                                  context.go('/projects');
-                                },
-                                child: Text('ดูทั้งหมด'),
-                              ),
-                            ],
-                          ),
+                          TopWidget(text: 'Top Projects', path: '/projects'),
                         ],
                       ),
                       Column(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                spacing: 8,
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    color: Colors.yellow,
-                                    size: 50,
-                                  ),
-                                  Text(
-                                    'Top Activities',
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              FilledButton(
-                                onPressed: () {
-                                  context.go('/activities');
-                                },
-                                child: Text('ดูทั้งหมด'),
-                              ),
-                            ],
+                          TopWidget(
+                            text: 'Top Activities',
+                            path: '/activities',
                           ),
                         ],
                       ),
@@ -439,9 +386,38 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCertificateCard(BuildContext context, int index) {
-    final certificate = certificateCatalog[index];
+  Widget _buildCertificatesSection(BuildContext context) {
+    return FutureBuilder<List<CertificateModel>>(
+      future: _featuredCertificatesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (snapshot.hasError) {
+          return Text('ไม่สามารถโหลดข้อมูลเกียรติบัตรได้: ${snapshot.error}');
+        }
+        final certificates = snapshot.data ?? const <CertificateModel>[];
+        if (certificates.isEmpty) {
+          return const Text('ยังไม่มีข้อมูลเกียรติบัตร');
+        }
 
+        return Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 32,
+          runSpacing: 32,
+          children: certificates
+              .take(5)
+              .map((certificate) => _buildCertificateCard(context, certificate))
+              .toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildCertificateCard(
+    BuildContext context,
+    CertificateModel certificate,
+  ) {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -495,38 +471,61 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              const Positioned(
-                top: 10,
-                right: 10,
-                child: Icon(Icons.star_rounded, color: Colors.yellow),
-              ),
               Positioned(
                 top: 10,
                 left: 10,
-                child: Column(
+                right: 10,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Chip(
-                      label: Text(
-                        certificate.awardCategories.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 180),
+                          child: Chip(
+                            label: Text(
+                              certificate.awardCategories.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
+                            ),
+                            backgroundColor: certificate.awardCategories.color,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 180),
+                          child: Chip(
+                            label: Text(
+                              certificate.competitionLevel.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
+                            ),
+                            backgroundColor: certificate.competitionLevel.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (certificate.isFeatured)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8, right: 8),
+                        child: Icon(
+                          Icons.star_rounded,
+                          color: Colors.yellow,
+                          size: 28,
                         ),
                       ),
-                      backgroundColor: certificate.awardCategories.color,
-                    ),
-                    SizedBox(height: 4),
-                    Chip(
-                      label: Text(
-                        certificate.competitionLevel.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
-                        ),
-                      ),
-                      backgroundColor: certificate.competitionLevel.color,
-                    ),
                   ],
                 ),
               ),

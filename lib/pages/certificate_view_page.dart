@@ -1,22 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
+import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
+import 'package:sukonlanat_portfolio/utils/image_downloader.dart';
+import 'package:sukonlanat_portfolio/utils/thai_date_formatter.dart';
 
 class CertificateViewPage extends StatelessWidget {
   const CertificateViewPage({
     super.key,
     required this.certificate,
+    this.certificateId,
     this.returnPath = '/certificates',
   });
 
-  final CertificateModel certificate;
+  const CertificateViewPage.fromId({
+    super.key,
+    required this.certificateId,
+    this.returnPath = '/certificates',
+  }) : certificate = null;
+
+  final CertificateModel? certificate;
+  final String? certificateId;
   final String returnPath;
 
   @override
   Widget build(BuildContext context) {
+    if (certificate == null) {
+      return FutureBuilder<CertificateModel?>(
+        future: CertificateRepository().fetchCertificateById(certificateId!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              body: Center(
+                child: LoadingAnimationWidget.stretchedDots(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  size: 40,
+                ),
+              ),
+            );
+          }
+
+          if (snapshot.hasError || snapshot.data == null) {
+            return Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  onPressed: () => context.go(returnPath),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+              ),
+              body: Center(
+                child: Text(
+                  snapshot.hasError
+                      ? 'ไม่สามารถโหลดข้อมูลเกียรติบัตรได้'
+                      : 'ไม่พบข้อมูลเกียรติบัตร',
+                ),
+              ),
+            );
+          }
+
+          return _buildCertificate(context, snapshot.data!);
+        },
+      );
+    }
+
+    return _buildCertificate(context, certificate!);
+  }
+
+  Widget _buildCertificate(BuildContext context, CertificateModel certificate) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.white10.withAlpha(120),
         elevation: 0,
@@ -79,11 +132,12 @@ class CertificateViewPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 32),
-                              Icon(
-                                Icons.star_rounded,
-                                color: Colors.yellow,
-                                size: 40,
-                              ),
+                              if (certificate.isFeatured)
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: Colors.yellow,
+                                  size: 40,
+                                ),
                             ],
                           ),
                           Row(
@@ -110,13 +164,15 @@ class CertificateViewPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Text('Certificate ID: ${certificate.id}'),
+                      Text(
+                        'วันที่: ${formatThaiDateRange(certificate.startTime, certificate.endTime)}',
+                      ),
                       const SizedBox(height: 8),
                       Text('ผู้จัด: ${certificate.organizer}'),
                       const Divider(height: 32, color: Colors.white),
                       Text(
                         certificate.description,
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                       const Divider(height: 32, color: Colors.white),
                       Text(
@@ -127,6 +183,70 @@ class CertificateViewPage extends StatelessWidget {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
+                      const SizedBox(height: 32),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                              mainAxisSpacing: 32,
+                              crossAxisSpacing: 32,
+                              childAspectRatio: 4 / 3,
+                              maxCrossAxisExtent: 400,
+                            ),
+                        itemCount: certificate.imagesUrl.length,
+                        itemBuilder: (context, index) {
+                          final imageUrl = certificate.imagesUrl[index];
+                          return Container(
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: InkWell(
+                              onTap: () =>
+                                  _showImageViewer(context, imageUrl, index),
+                              child: Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    return child;
+                                  }
+
+                                  return Card(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        spacing: 16,
+                                        children: [
+                                          Image.network(
+                                            'https://media.tenor.com/TuPtATYAboQAAAAj/load-loading.gif',
+                                            height: 80,
+                                          ),
+                                          const Text(
+                                            'Loading...',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.image_not_supported_outlined,
+                                    size: 48,
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -135,6 +255,63 @@ class CertificateViewPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showImageViewer(BuildContext context, String imageUrl, int index) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return Dialog.fullscreen(
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('รูปภาพเกียรติบัตรและกิจกรรม'),
+              actions: [
+                if (supportsImageDownload)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      tooltip: 'ดาวน์โหลดรูปภาพ',
+                      onPressed: () async {
+                        await downloadImage(
+                          imageUrl,
+                          'certificate-${index + 1}.jpg',
+                        );
+                      },
+                      icon: Icon(
+                        Icons.download,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+              ],
+              leading: IconButton(
+                tooltip: 'ปิด',
+                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            body: Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: Colors.white,
+                    size: 64,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

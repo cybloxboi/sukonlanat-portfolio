@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sukonlanat_portfolio/pages/home_page.dart';
 import 'package:sukonlanat_portfolio/pages/certificate_view_page.dart';
 import 'package:sukonlanat_portfolio/pages/section_page.dart';
-import 'package:sukonlanat_portfolio/data/certificate_catalog.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/audio_player_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/background_video.dart';
@@ -111,10 +110,8 @@ class _MainAppState extends State<MainApp> {
         path: '/certificates/:certificateId',
         pageBuilder: (context, state) => _transitionPage(
           state,
-          CertificateViewPage(
-            certificate: certificateById(
-              state.pathParameters['certificateId'] ?? '',
-            ),
+          CertificateViewPage.fromId(
+            certificateId: state.pathParameters['certificateId'] ?? '',
             returnPath: state.uri.queryParameters['from'] == 'home'
                 ? '/'
                 : '/certificates',
