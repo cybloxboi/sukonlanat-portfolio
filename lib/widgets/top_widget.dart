@@ -14,7 +14,7 @@ class TopWidget extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              const Icon(Icons.star_rounded, color: Colors.yellow, size: 50),
+              const Icon(Icons.star_rounded, color: Colors.yellow, size: 30),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

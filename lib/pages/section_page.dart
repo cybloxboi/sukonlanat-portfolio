@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
-import 'package:sukonlanat_portfolio/utils/thai_date_formatter.dart';
 
 class SectionPage extends StatelessWidget {
   const SectionPage({
@@ -146,9 +145,8 @@ class SectionPage extends StatelessWidget {
                       'รางวัล: ${certificate.awardCategories.name} • '
                       'ระดับ: ${certificate.competitionLevel.name}',
                     ),
-                    Text(
-                      'วันที่: ${formatThaiDateRange(certificate.startTime, certificate.endTime)}',
-                    ),
+                    if (certificate.datePeriod.isNotEmpty)
+                      Text('วันที่: ${certificate.datePeriod}'),
                   ],
                 ),
                 onTap: () => context.go('/certificates/${certificate.id}'),

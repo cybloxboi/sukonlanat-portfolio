@@ -34,7 +34,7 @@ class CertificateRepository {
   }) async {
     var query = _client.schema('public').from(table).select();
 
-    final rows = await query.order('start_time', ascending: false);
+    final rows = await query.order('order_id', ascending: true);
     return rows
         .whereType<Map>()
         .map((row) => CertificateModel.fromMap(Map<String, dynamic>.from(row)))
@@ -47,7 +47,7 @@ class CertificateRepository {
         .from('certificates')
         .select()
         .eq('is_featured', true)
-        .order('start_time', ascending: false);
+        .order('order_id', ascending: true);
 
     return rows
         .whereType<Map>()

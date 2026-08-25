@@ -5,7 +5,7 @@ import 'package:sukonlanat_portfolio/pages/home_page.dart';
 import 'package:sukonlanat_portfolio/pages/certificate_view_page.dart';
 import 'package:sukonlanat_portfolio/pages/section_page.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
-import 'package:sukonlanat_portfolio/widgets/audio_player_widget.dart';
+// import 'package:sukonlanat_portfolio/widgets/audio_player_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/background_video.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -155,7 +155,7 @@ class _MainAppState extends State<MainApp> {
           fit: StackFit.expand,
           children: [
             BackgroundVideo(child: child ?? const SizedBox.shrink()),
-            const AudioPlayerWidget(),
+            // const AudioPlayerWidget(),
           ],
         );
       },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
@@ -321,36 +322,30 @@ class _HomePageState extends State<HomePage> {
               ),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    spacing: 32,
-                    children: [
-                      Column(
-                        children: [
-                          TopWidget(
-                            text: 'Top Certificates',
-                            path: '/certificates',
-                          ),
-                          const SizedBox(height: 16),
-                          _buildCertificatesSection(context),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          TopWidget(text: 'Top Projects', path: '/projects'),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          TopWidget(
-                            text: 'Top Activities',
-                            path: '/activities',
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  spacing: 32,
+                  children: [
+                    Column(
+                      children: [
+                        TopWidget(
+                          text: 'Top Certificates',
+                          path: '/certificates',
+                        ),
+                        const SizedBox(height: 16),
+                        _buildCertificatesSection(context),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        TopWidget(text: 'Top Projects', path: '/projects'),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        TopWidget(text: 'Top Activities', path: '/activities'),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 50),
@@ -391,14 +386,22 @@ class _HomePageState extends State<HomePage> {
       future: _featuredCertificatesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return LoadingAnimationWidget.stretchedDots(
+            color: Theme.of(context).colorScheme.primary,
+            size: 40,
+          );
         }
         if (snapshot.hasError) {
           return Text('ไม่สามารถโหลดข้อมูลเกียรติบัตรได้: ${snapshot.error}');
         }
+
         final certificates = snapshot.data ?? const <CertificateModel>[];
+
         if (certificates.isEmpty) {
-          return const Text('ยังไม่มีข้อมูลเกียรติบัตร');
+          return const Text(
+            'ยังไม่มีข้อมูลเกียรติบัตร',
+            style: TextStyle(color: Colors.white),
+          );
         }
 
         return Wrap(

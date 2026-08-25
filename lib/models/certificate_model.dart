@@ -37,10 +37,7 @@ class CertificateModel {
         'color': map['competition_level_color'] ?? levelMap?['color'],
       }),
       imagesUrl: _images(map['images_url'] ?? map['imagesUrl']),
-      startTime:
-          DateTime.tryParse(_string(map['start_time'] ?? map['startTime'])) ??
-          DateTime.now(),
-      endTime: _date(map['end_time'] ?? map['endTime']),
+      datePeriod: _string(map['date_period'] ?? map['datePeriod']),
     );
   }
 
@@ -53,8 +50,7 @@ class CertificateModel {
   final AwardCategories awardCategories;
   final CompetitionLevel competitionLevel;
   final List<String> imagesUrl;
-  final DateTime startTime;
-  final DateTime? endTime;
+  final String datePeriod;
 
   CertificateModel({
     required this.id,
@@ -66,8 +62,7 @@ class CertificateModel {
     required this.competitionLevel,
     required this.backgroundUrl,
     required this.imagesUrl,
-    required this.startTime,
-    this.endTime,
+    required this.datePeriod,
   });
 
   static String _string(Object? value) => value?.toString().trim() ?? '';
@@ -98,6 +93,4 @@ class CertificateModel {
     final text = _string(value);
     return text.isEmpty ? const [] : [text];
   }
-
-  static DateTime? _date(Object? value) => DateTime.tryParse(_string(value));
 }
