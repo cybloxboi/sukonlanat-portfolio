@@ -65,7 +65,7 @@ class CertificateModel {
     required this.datePeriod,
   });
 
-  static String _string(Object? value) => value?.toString().trim() ?? '';
+  static String _string(Object? value) => value?.toString() ?? '';
 
   static String? _firstNonEmpty(Map<String, dynamic> map, List<String> keys) {
     for (final key in keys) {

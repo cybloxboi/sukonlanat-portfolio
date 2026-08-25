@@ -56,22 +56,22 @@ class CompetitionLevel {
     nationalId: CompetitionLevel(
       id: nationalId,
       name: 'ระดับประเทศ',
-      color: Color.fromARGB(255, 236, 249, 95),
+      color: Color(0xFF2563EB),
     ),
     regionalId: CompetitionLevel(
       id: regionalId,
       name: 'ระดับภาค',
-      color: Color(0xFFAB47BC),
+      color: Color(0xFF7C3AED),
     ),
     provinceId: CompetitionLevel(
       id: provinceId,
       name: 'ระดับจังหวัด',
-      color: Color(0xFF26A69A),
+      color: Color(0xFF059669),
     ),
     schoolId: CompetitionLevel(
       id: schoolId,
       name: 'ระดับโรงเรียน',
-      color: Color(0xFFEF5350),
+      color: Color(0xFFDC2626),
     ),
   };
 

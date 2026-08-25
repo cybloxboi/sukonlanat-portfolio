@@ -44,45 +44,33 @@ class AwardCategories {
   static const String thirdPlaceId = 'third_place';
   static const String consolationId = 'consolation';
   static const String participationId = 'participation';
-  static const String trainingId = 'training';
-  static const String outstandingWorkId = 'outstanding_work';
   static const String otherId = 'other';
 
   static final Map<String, AwardCategories> presets = {
     firstPlaceId: AwardCategories(
       id: firstPlaceId,
       name: 'รางวัลชนะเลิศ',
-      color: Color(0xFFFFC107),
+      color: Color(0xFFB8860B),
     ),
     secondPlaceId: AwardCategories(
       id: secondPlaceId,
       name: 'รางวัลรองชนะเลิศอันดับ 1',
-      color: Color(0xFF90A4AE),
+      color: Color(0xFF546E7A),
     ),
     thirdPlaceId: AwardCategories(
       id: thirdPlaceId,
       name: 'รางวัลรองชนะเลิศอันดับ 2',
-      color: Color(0xFFBCAAA4),
+      color: Color(0xFF795548),
     ),
     consolationId: AwardCategories(
       id: consolationId,
       name: 'รางวัลชมเชย',
-      color: Color(0xFFFF8A65),
+      color: Color(0xFFE65100),
     ),
     participationId: AwardCategories(
       id: participationId,
-      name: 'เข้าร่วมกิจกรรม',
-      color: Color(0xFFEF5350),
-    ),
-    trainingId: AwardCategories(
-      id: trainingId,
-      name: 'ผ่านการอบรม',
-      color: Color(0xFF42A5F5),
-    ),
-    outstandingWorkId: AwardCategories(
-      id: outstandingWorkId,
-      name: 'ผลงานเด่น',
-      color: Color(0xFFAB47BC),
+      name: 'เข้าร่วม',
+      color: Color(0xFFC62828),
     ),
   };
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
+import 'package:sukonlanat_portfolio/widgets/certificates_section.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
 import 'package:sukonlanat_portfolio/widgets/markdown_reader.dart';
 import 'package:sukonlanat_portfolio/widgets/top_widget.dart';
@@ -21,14 +21,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<List<CertificateModel>> _certificatesFuture;
-  late Future<List<CertificateModel>> _featuredCertificatesFuture;
+  late CertificateRepository repository;
 
   @override
   void initState() {
     super.initState();
-    final repository = CertificateRepository();
+
+    repository = CertificateRepository();
     _certificatesFuture = repository.fetchCertificates();
-    _featuredCertificatesFuture = repository.fetchFeaturedCertificates();
+
     _loadUniversityData();
   }
 
@@ -332,7 +333,12 @@ class _HomePageState extends State<HomePage> {
                           path: '/certificates',
                         ),
                         const SizedBox(height: 16),
-                        _buildCertificatesSection(context),
+                        CertificatesSection(
+                          repository: repository,
+                          featuredOnly: true,
+                          showFilter: false,
+                          embedded: true,
+                        ),
                       ],
                     ),
                     Column(
@@ -374,164 +380,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 50),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCertificatesSection(BuildContext context) {
-    return FutureBuilder<List<CertificateModel>>(
-      future: _featuredCertificatesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return LoadingAnimationWidget.stretchedDots(
-            color: Theme.of(context).colorScheme.primary,
-            size: 40,
-          );
-        }
-        if (snapshot.hasError) {
-          return Text('ไม่สามารถโหลดข้อมูลเกียรติบัตรได้: ${snapshot.error}');
-        }
-
-        final certificates = snapshot.data ?? const <CertificateModel>[];
-
-        if (certificates.isEmpty) {
-          return const Text(
-            'ยังไม่มีข้อมูลเกียรติบัตร',
-            style: TextStyle(color: Colors.white),
-          );
-        }
-
-        return Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 32,
-          runSpacing: 32,
-          children: certificates
-              .take(5)
-              .map((certificate) => _buildCertificateCard(context, certificate))
-              .toList(),
-        );
-      },
-    );
-  }
-
-  Widget _buildCertificateCard(
-    BuildContext context,
-    CertificateModel certificate,
-  ) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          context.go('/certificates/${certificate.id}?from=home');
-        },
-        child: SizedBox(
-          width: 320,
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  SizedBox(
-                    height: 180,
-                    width: double.infinity,
-                    child: ColoredBox(
-                      color: Colors.black12,
-                      child: Image.network(
-                        certificate.backgroundUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 48,
-                            ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Text(
-                          certificate.name,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        const Divider(),
-                        const SizedBox(height: 4),
-                        Text(
-                          certificate.description,
-                          maxLines: 3,
-                          style: TextStyle(fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Positioned(
-                top: 10,
-                left: 10,
-                right: 10,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 180),
-                          child: Chip(
-                            label: Text(
-                              certificate.awardCategories.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black,
-                              ),
-                            ),
-                            backgroundColor: certificate.awardCategories.color,
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 180),
-                          child: Chip(
-                            label: Text(
-                              certificate.competitionLevel.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.black,
-                              ),
-                            ),
-                            backgroundColor: certificate.competitionLevel.color,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (certificate.isFeatured)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8, right: 8),
-                        child: Icon(
-                          Icons.star_rounded,
-                          color: Colors.yellow,
-                          size: 28,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

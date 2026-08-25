@@ -5,7 +5,7 @@ import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/utils/image_downloader.dart';
 
-class CertificateViewPage extends StatelessWidget {
+class CertificateViewPage extends StatefulWidget {
   const CertificateViewPage({
     super.key,
     required this.certificate,
@@ -24,10 +24,27 @@ class CertificateViewPage extends StatelessWidget {
   final String returnPath;
 
   @override
+  State<CertificateViewPage> createState() => _CertificateViewPageState();
+}
+
+class _CertificateViewPageState extends State<CertificateViewPage> {
+  late Future<CertificateModel?> _certificateFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.certificate == null) {
+      _certificateFuture = CertificateRepository().fetchCertificateById(
+        widget.certificateId!,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (certificate == null) {
+    if (widget.certificate == null) {
       return FutureBuilder<CertificateModel?>(
-        future: CertificateRepository().fetchCertificateById(certificateId!),
+        future: _certificateFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(
@@ -44,7 +61,7 @@ class CertificateViewPage extends StatelessWidget {
             return Scaffold(
               appBar: AppBar(
                 leading: IconButton(
-                  onPressed: () => context.go(returnPath),
+                  onPressed: () => context.go(widget.returnPath),
                   icon: const Icon(Icons.arrow_back),
                 ),
               ),
@@ -63,7 +80,7 @@ class CertificateViewPage extends StatelessWidget {
       );
     }
 
-    return _buildCertificate(context, certificate!);
+    return _buildCertificate(context, widget.certificate!);
   }
 
   Widget _buildCertificate(BuildContext context, CertificateModel certificate) {
@@ -75,38 +92,90 @@ class CertificateViewPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          onPressed: () => context.go(returnPath),
+          onPressed: () => context.go(widget.returnPath),
           icon: const Icon(Icons.arrow_back),
         ),
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ShaderMask(
-                shaderCallback: (Rect bounds) {
-                  return const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.black, Colors.transparent],
-                    stops: [0.3, 1.0],
-                  ).createShader(bounds);
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  if (MediaQuery.sizeOf(context).width < 600) {
+                    return ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.black, Colors.transparent],
+                          stops: [0.3, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: Image.network(
+                        certificate.backgroundUrl,
+                        height: 360,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox(
+                              height: 360,
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                size: 64,
+                              ),
+                            ),
+                      ),
+                    );
+                  }
+
+                  final imageWidth = constraints.maxWidth.clamp(0.0, 900.0);
+
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: SizedBox(
+                        width: imageWidth,
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.network(
+                            certificate.backgroundUrl,
+                            fit: BoxFit.cover,
+                            frameBuilder:
+                                (
+                                  context,
+                                  child,
+                                  frame,
+                                  wasSynchronouslyLoaded,
+                                ) {
+                                  if (wasSynchronouslyLoaded || frame != null) {
+                                    return child;
+                                  }
+
+                                  return _buildImageLoadingCard(context);
+                                },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 64,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
                 },
-                blendMode: BlendMode.dstIn,
-                child: Image.network(
-                  certificate.backgroundUrl,
-                  height: 360,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const SizedBox(
-                    height: 360,
-                    child: Icon(Icons.image_not_supported_outlined, size: 64),
-                  ),
-                ),
               ),
               Transform.translate(
-                offset: const Offset(0, -100),
+                offset: Offset(
+                  0,
+                  MediaQuery.sizeOf(context).width > 600 ? 0 : -100,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
@@ -191,55 +260,64 @@ class CertificateViewPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                              mainAxisSpacing: 32,
-                              crossAxisSpacing: 32,
-                              childAspectRatio: 4 / 3,
-                              maxCrossAxisExtent: 400,
-                            ),
-                        itemCount: certificate.imagesUrl.length,
-                        itemBuilder: (context, index) {
-                          final imageUrl = certificate.imagesUrl[index];
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            clipBehavior: Clip.antiAlias,
-                            child: Material(
-                              color: Theme.of(context).cardColor,
-                              child: InkWell(
-                                onTap: () =>
-                                    _showImageViewer(context, imageUrl, index),
-                                child: Image.network(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                  frameBuilder:
-                                      (
-                                        context,
-                                        child,
-                                        frame,
-                                        wasSynchronouslyLoaded,
-                                      ) {
-                                        if (wasSynchronouslyLoaded ||
-                                            frame != null) {
-                                          return child;
-                                        }
-
-                                        return _buildImageLoadingCard(context);
-                                      },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size: 48,
-                                      ),
-                                    );
-                                  },
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverGridDelegateWithMaxCrossAxisExtent(
+                                  mainAxisSpacing: 32,
+                                  crossAxisSpacing: 32,
+                                  childAspectRatio: 4 / 3,
+                                  maxCrossAxisExtent: 400,
                                 ),
-                              ),
-                            ),
+                            itemCount: certificate.imagesUrl.length,
+                            itemBuilder: (context, index) {
+                              final imageUrl = certificate.imagesUrl[index];
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                clipBehavior: Clip.antiAlias,
+                                child: Material(
+                                  color: Theme.of(context).cardColor,
+                                  child: InkWell(
+                                    onTap: () => _showImageViewer(
+                                      context,
+                                      imageUrl,
+                                      index,
+                                    ),
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      frameBuilder:
+                                          (
+                                            context,
+                                            child,
+                                            frame,
+                                            wasSynchronouslyLoaded,
+                                          ) {
+                                            if (wasSynchronouslyLoaded ||
+                                                frame != null) {
+                                              return child;
+                                            }
+
+                                            return _buildImageLoadingCard(
+                                              context,
+                                            );
+                                          },
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported_outlined,
+                                            size: 48,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
