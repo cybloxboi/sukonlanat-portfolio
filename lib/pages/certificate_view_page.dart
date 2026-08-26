@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/utils/image_downloader.dart';
+import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
 
 class CertificateViewPage extends StatefulWidget {
   const CertificateViewPage({
@@ -47,14 +47,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
         future: _certificateFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(
-              body: Center(
-                child: LoadingAnimationWidget.stretchedDots(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 40,
-                ),
-              ),
-            );
+            return Scaffold(body: Center(child: LoadingWidget()));
           }
 
           if (snapshot.hasError || snapshot.data == null) {
@@ -199,12 +192,12 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 32),
+                              const SizedBox(width: 24),
                               if (certificate.isFeatured)
                                 const Icon(
                                   Icons.star_rounded,
                                   color: Colors.yellow,
-                                  size: 40,
+                                  size: 30,
                                 ),
                             ],
                           ),
@@ -215,7 +208,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                               Chip(
                                 label: Text(
                                   certificate.awardCategories.name,
-                                  style: TextStyle(color: Colors.black),
+                                  style: TextStyle(color: Colors.white),
                                 ),
                                 backgroundColor:
                                     certificate.awardCategories.color,
@@ -223,7 +216,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                               Chip(
                                 label: Text(
                                   certificate.competitionLevel.name,
-                                  style: TextStyle(color: Colors.black),
+                                  style: TextStyle(color: Colors.white),
                                 ),
                                 backgroundColor:
                                     certificate.competitionLevel.color,
@@ -335,20 +328,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
   Widget _buildImageLoadingCard(BuildContext context) {
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 16,
-          children: [
-            Image.asset('assets/images/loading.gif', height: 80),
-            Text(
-              'Loading...',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-            ),
-          ],
-        ),
-      ),
+      child: Padding(padding: const EdgeInsets.all(16), child: LoadingWidget()),
     );
   }
 

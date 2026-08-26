@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
-import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
 
 class MarkdownReader extends StatefulWidget {
   const MarkdownReader({
@@ -20,7 +20,6 @@ class MarkdownReader extends StatefulWidget {
 }
 
 class _MarkdownReaderState extends State<MarkdownReader> {
-  static final Map<String, String> _markdownCache = {};
   late Future<String> markdown;
   bool _isExpanded = false;
 
@@ -42,17 +41,27 @@ class _MarkdownReaderState extends State<MarkdownReader> {
   }
 
   Future<String> fetchMarkdown() async {
-    final cachedMarkdown = _markdownCache[widget.url];
-    if (cachedMarkdown != null) return cachedMarkdown;
+    final sourceUri = Uri.parse(widget.url);
+    final requestUri = sourceUri.replace(
+      queryParameters: {
+        ...sourceUri.queryParameters,
+        '_v': DateTime.now().millisecondsSinceEpoch.toString(),
+      },
+    );
 
-    final response = await http.get(Uri.parse(widget.url));
+    final response = await http.get(
+      requestUri,
+      headers: const {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    );
 
     if (response.statusCode != 200) {
       throw Exception('ไม่สามารถอ่าน Markdown ได้');
     }
 
     final content = utf8.decode(response.bodyBytes);
-    _markdownCache[widget.url] = content;
     return content;
   }
 
@@ -62,12 +71,7 @@ class _MarkdownReaderState extends State<MarkdownReader> {
       future: markdown,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: LoadingAnimationWidget.stretchedDots(
-              color: Theme.of(context).colorScheme.onSurface,
-              size: 40,
-            ),
-          );
+          return Center(child: LoadingWidget());
         }
 
         if (snapshot.hasError) {

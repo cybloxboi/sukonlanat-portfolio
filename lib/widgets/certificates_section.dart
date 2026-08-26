@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
+import 'package:sukonlanat_portfolio/utils/thai_date_formatter.dart';
 import 'package:sukonlanat_portfolio/widgets/certificate_card.dart';
+import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
 
 class CertificatesSection extends StatefulWidget {
   const CertificatesSection({
@@ -25,6 +27,10 @@ class _CertificatesSectionState extends State<CertificatesSection> {
   late final Future<List<CertificateModel>> _certificatesFuture;
   String? _awardFilter;
   String? _levelFilter;
+  bool _featuredFilter = false;
+
+  bool get _hasActiveFilters =>
+      _awardFilter != null || _levelFilter != null || _featuredFilter;
 
   @override
   void initState() {
@@ -41,21 +47,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
       future: _certificatesFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 16,
-              children: [
-                Image.asset('assets/images/loading.gif', height: 80),
-                Text(
-                  'Loading...',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          );
+          return Center(child: LoadingWidget());
         }
 
         if (snapshot.hasError) {
@@ -68,48 +60,115 @@ class _CertificatesSectionState extends State<CertificatesSection> {
               return (_awardFilter == null ||
                       certificate.awardCategories.name == _awardFilter) &&
                   (_levelFilter == null ||
-                      certificate.competitionLevel.name == _levelFilter);
+                      certificate.competitionLevel.name == _levelFilter) &&
+                  (!_featuredFilter || certificate.isFeatured);
             })
             .toList(growable: false);
         final displayedCertificates = widget.featuredOnly
             ? filtered.take(5).toList(growable: false)
             : filtered;
+        final latestCreatedAt = _latestCreatedAt(certificates);
 
         final certificateList = displayedCertificates.isEmpty
             ? const Center(child: Text('ไม่พบข้อมูลเกียรติบัตร'))
-            : Wrap(
-                spacing: 32,
-                runSpacing: 32,
-                children: certificates
-                    .take(5)
-                    .map(
-                      (certificate) =>
-                          CertificateCard(certificate: certificate),
-                    )
-                    .toList(),
+            : SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 16,
+                  runSpacing: 32,
+                  children: displayedCertificates
+                      .map(
+                        (certificate) =>
+                            CertificateCard(certificate: certificate),
+                      )
+                      .toList(),
+                ),
               );
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (widget.showFilter)
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showFilterSheet(context, certificates),
-                    icon: const Icon(Icons.filter_list),
-                    label: const Text('กรอง'),
-                  ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                child: Row(
+                  children: [
+                    if (latestCreatedAt != null)
+                      Expanded(
+                        child: Text(
+                          'แก้ไขล่าสุด: ${_formatTimestamp(latestCreatedAt)}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    else
+                      const Spacer(),
+                    OutlinedButton.icon(
+                      onPressed: _hasActiveFilters ? _clearFilters : null,
+                      icon: const Icon(Icons.clear_all),
+                      label: const Text('ล้างการกรอง'),
+                    ),
+                    const SizedBox(width: 8),
+                    _hasActiveFilters
+                        ? FilledButton.icon(
+                            onPressed: () =>
+                                _showFilterSheet(context, certificates),
+                            icon: const Icon(Icons.filter_list),
+                            label: const Text('กรองแล้ว'),
+                          )
+                        : OutlinedButton.icon(
+                            onPressed: () =>
+                                _showFilterSheet(context, certificates),
+                            icon: const Icon(Icons.filter_list),
+                            label: const Text('กรอง'),
+                          ),
+                  ],
                 ),
               ),
-            widget.embedded
-                ? certificateList
-                : Expanded(child: certificateList),
+            if (widget.embedded)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: certificateList,
+              )
+            else
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: certificateList,
+                ),
+              ),
           ],
         );
       },
     );
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _awardFilter = null;
+      _levelFilter = null;
+      _featuredFilter = false;
+    });
+  }
+
+  DateTime? _latestCreatedAt(List<CertificateModel> certificates) {
+    DateTime? latest;
+    for (final certificate in certificates) {
+      final createdAt = certificate.createdAt;
+
+      if (createdAt != null && (latest == null || createdAt.isAfter(latest))) {
+        latest = createdAt;
+      }
+    }
+
+    return latest;
+  }
+
+  String _formatTimestamp(DateTime dateTime) {
+    final localDateTime = dateTime.toLocal();
+    final hour = localDateTime.hour.toString().padLeft(2, '0');
+    final minute = localDateTime.minute.toString().padLeft(2, '0');
+    return '${formatThaiDate(localDateTime)} $hour:$minute น.';
   }
 
   Future<void> _showFilterSheet(
@@ -126,12 +185,12 @@ class _CertificatesSectionState extends State<CertificatesSection> {
         .toList();
     var selectedAward = _awardFilter;
     var selectedLevel = _levelFilter;
+    var selectedFeatured = _featuredFilter;
 
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (context) => StatefulBuilder(
+    Widget filterContent() {
+      return StatefulBuilder(
         builder: (context, setSheetState) {
-          return Padding(
+          return SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
               24,
               24,
@@ -141,14 +200,19 @@ class _CertificatesSectionState extends State<CertificatesSection> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const Text(
+                  'กรองเกียรติบัตร',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  initialValue: selectedAward,
+                  initialValue: selectedAward ?? '',
                   decoration: const InputDecoration(
-                    labelText: 'Award Category',
+                    labelText: 'หมวดหมู่รางวัล',
                   ),
                   items: [
                     const DropdownMenuItem<String>(
-                      value: null,
+                      value: '',
                       child: Text('ทั้งหมด'),
                     ),
                     ...awards.map(
@@ -156,18 +220,19 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                           DropdownMenuItem(value: award, child: Text(award)),
                     ),
                   ],
-                  onChanged: (value) =>
-                      setSheetState(() => selectedAward = value),
+                  onChanged: (value) => setSheetState(
+                    () => selectedAward = value?.isEmpty == true ? null : value,
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 DropdownButtonFormField<String>(
-                  initialValue: selectedLevel,
+                  initialValue: selectedLevel ?? '',
                   decoration: const InputDecoration(
-                    labelText: 'Competition Level',
+                    labelText: 'ระดับการแข่งขัน',
                   ),
                   items: [
                     const DropdownMenuItem<String>(
-                      value: null,
+                      value: '',
                       child: Text('ทั้งหมด'),
                     ),
                     ...levels.map(
@@ -175,10 +240,19 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                           DropdownMenuItem(value: level, child: Text(level)),
                     ),
                   ],
-                  onChanged: (value) =>
-                      setSheetState(() => selectedLevel = value),
+                  onChanged: (value) => setSheetState(
+                    () => selectedLevel = value?.isEmpty == true ? null : value,
+                  ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: selectedFeatured,
+                  title: const Text('แสดงเฉพาะรายการเด่น'),
+                  onChanged: (value) =>
+                      setSheetState(() => selectedFeatured = value ?? false),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -192,6 +266,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                         setState(() {
                           _awardFilter = selectedAward;
                           _levelFilter = selectedLevel;
+                          _featuredFilter = selectedFeatured;
                         });
                         Navigator.pop(context);
                       },
@@ -203,7 +278,25 @@ class _CertificatesSectionState extends State<CertificatesSection> {
             ),
           );
         },
-      ),
-    );
+      );
+    }
+
+    if (MediaQuery.sizeOf(context).width >= 600) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: filterContent(),
+          ),
+        ),
+      );
+    } else {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => filterContent(),
+      );
+    }
   }
 }

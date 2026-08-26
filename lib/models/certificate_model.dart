@@ -38,6 +38,7 @@ class CertificateModel {
       }),
       imagesUrl: _images(map['images_url'] ?? map['imagesUrl']),
       datePeriod: _string(map['date_period'] ?? map['datePeriod']),
+      createdAt: DateTime.tryParse(_string(map['created_at'])),
     );
   }
 
@@ -51,6 +52,7 @@ class CertificateModel {
   final CompetitionLevel competitionLevel;
   final List<String> imagesUrl;
   final String datePeriod;
+  final DateTime? createdAt;
 
   CertificateModel({
     required this.id,
@@ -63,6 +65,7 @@ class CertificateModel {
     required this.backgroundUrl,
     required this.imagesUrl,
     required this.datePeriod,
+    required this.createdAt,
   });
 
   static String _string(Object? value) => value?.toString() ?? '';
