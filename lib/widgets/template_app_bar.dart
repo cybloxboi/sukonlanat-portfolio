@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class TemplateAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const TemplateAppBar({super.key, required this.title});
+  const TemplateAppBar({super.key, this.title, this.returnPath});
 
-  final String title;
+  final String? title;
+  final String? returnPath;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -23,7 +24,7 @@ class TemplateAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white10.withAlpha(120),
       centerTitle: false,
       title: Text(
-        title,
+        title ?? '',
         maxLines: 1,
         overflow: TextOverflow.fade,
         softWrap: false,
@@ -33,7 +34,7 @@ class TemplateAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       leading: IconButton(
-        onPressed: () => context.go('/'),
+        onPressed: () => context.go(returnPath ?? '/'),
         icon: const Icon(Icons.arrow_back),
       ),
       actions: isNarrowScreen

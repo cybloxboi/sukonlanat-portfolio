@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sukonlanat_portfolio/pages/home_page.dart';
 import 'package:sukonlanat_portfolio/pages/certificate_view_page.dart';
 import 'package:sukonlanat_portfolio/pages/section_page.dart';
+import 'package:sukonlanat_portfolio/pages/project_view_page.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 // import 'package:sukonlanat_portfolio/widgets/audio_player_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/background_video.dart';
@@ -112,9 +113,8 @@ class _MainAppState extends State<MainApp> {
           state,
           CertificateViewPage.fromId(
             certificateId: state.pathParameters['certificateId'] ?? '',
-            returnPath: state.uri.queryParameters['from'] == 'home'
-                ? '/'
-                : '/certificates',
+            returnPath:
+                state.uri.queryParameters['returnPath'] ?? '/certificates',
           ),
         ),
       ),
@@ -123,6 +123,16 @@ class _MainAppState extends State<MainApp> {
         pageBuilder: (context, state) => _transitionPage(
           state,
           const SectionPage(title: 'Projects', description: 'Projects page'),
+        ),
+      ),
+      GoRoute(
+        path: '/projects/:projectId',
+        pageBuilder: (context, state) => _transitionPage(
+          state,
+          ProjectViewPage.fromId(
+            projectId: state.pathParameters['projectId'] ?? '',
+            returnPath: state.uri.queryParameters['returnPath'] ?? '/projects',
+          ),
         ),
       ),
       GoRoute(

@@ -11,12 +11,14 @@ class CertificatesSection extends StatefulWidget {
     this.repository,
     this.featuredOnly = false,
     this.showFilter = true,
+    this.returnPath = '/certificates',
     this.embedded = false,
   });
 
   final CertificateRepository? repository;
   final bool featuredOnly;
   final bool showFilter;
+  final String returnPath;
   final bool embedded;
 
   @override
@@ -79,8 +81,10 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                   runSpacing: 32,
                   children: displayedCertificates
                       .map(
-                        (certificate) =>
-                            CertificateCard(certificate: certificate),
+                        (certificate) => CertificateCard(
+                          certificate: certificate,
+                          returnPath: widget.returnPath,
+                        ),
                       )
                       .toList(),
                 ),
@@ -91,7 +95,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
           children: [
             if (widget.showFilter)
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                 child: Row(
                   children: [
                     if (latestCreatedAt != null)
@@ -133,7 +137,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
             else
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   child: certificateList,
                 ),
               ),
@@ -258,7 +262,10 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('ยกเลิก'),
+                      child: const Text(
+                        'ยกเลิก',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     FilledButton(

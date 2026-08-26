@@ -1,5 +1,6 @@
 import 'package:sukonlanat_portfolio/models/award_categories.dart';
 import 'package:sukonlanat_portfolio/models/competition_level.dart';
+import 'package:sukonlanat_portfolio/models/project_model.dart';
 
 class CertificateModel {
   factory CertificateModel.fromMap(Map<String, dynamic> map) {
@@ -39,6 +40,7 @@ class CertificateModel {
       imagesUrl: _images(map['images_url'] ?? map['imagesUrl']),
       datePeriod: _string(map['date_period'] ?? map['datePeriod']),
       createdAt: DateTime.tryParse(_string(map['created_at'])),
+      relatedProjects: _relatedProjects(map['related_projects']),
     );
   }
 
@@ -53,6 +55,7 @@ class CertificateModel {
   final List<String> imagesUrl;
   final String datePeriod;
   final DateTime? createdAt;
+  final List<ProjectModel> relatedProjects;
 
   CertificateModel({
     required this.id,
@@ -66,6 +69,7 @@ class CertificateModel {
     required this.imagesUrl,
     required this.datePeriod,
     required this.createdAt,
+    this.relatedProjects = const [],
   });
 
   static String _string(Object? value) => value?.toString() ?? '';
@@ -81,11 +85,15 @@ class CertificateModel {
   static bool _bool(Object? value) {
     if (value is bool) return value;
     if (value is num) return value != 0;
+
     return _string(value).toLowerCase() == 'true';
   }
 
   static Map<String, dynamic>? _nestedMap(Object? value) {
-    if (value is Map) return Map<String, dynamic>.from(value);
+    if (value is Map) {
+      return Map<String, dynamic>.from(value);
+    }
+
     return null;
   }
 
@@ -93,7 +101,24 @@ class CertificateModel {
     if (value is List) {
       return value.map(_string).where((item) => item.isNotEmpty).toList();
     }
+
     final text = _string(value);
+
     return text.isEmpty ? const [] : [text];
+  }
+
+  static List<ProjectModel> _relatedProjects(Object? value) {
+    if (value is! List) return const [];
+    return value
+        .whereType<Map>()
+        .map((row) {
+          final nested = row['projects'];
+          return ProjectModel.fromMap(
+            nested is Map
+                ? Map<String, dynamic>.from(nested)
+                : Map<String, dynamic>.from(row),
+          );
+        })
+        .toList(growable: false);
   }
 }

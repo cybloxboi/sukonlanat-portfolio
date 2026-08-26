@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
+import 'package:sukonlanat_portfolio/models/project_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
+import 'package:sukonlanat_portfolio/services/project_repository.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
 import 'package:sukonlanat_portfolio/widgets/certificates_section.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
 import 'package:sukonlanat_portfolio/widgets/markdown_reader.dart';
 import 'package:sukonlanat_portfolio/widgets/top_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/university_intro_video.dart';
+import 'package:sukonlanat_portfolio/widgets/projects_section.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,12 +25,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<List<CertificateModel>> _certificatesFuture;
   late CertificateRepository repository;
+  late ProjectRepository projectRepository;
 
   @override
   void initState() {
     super.initState();
 
     repository = CertificateRepository();
+    projectRepository = ProjectRepository();
     _certificatesFuture = repository.fetchCertificates();
 
     _loadUniversityData();
@@ -187,7 +192,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                       SizedBox(
                         width: itemWidth,
-                        child: _buildStat('Projects', 10, context),
+                        child: FutureBuilder<List<ProjectModel>>(
+                          future: projectRepository.fetchProjects(),
+                          builder: (context, snapshot) => _buildStat(
+                            'Projects',
+                            snapshot.data?.length ?? 0,
+                            context,
+                          ),
+                        ),
                       ),
                       SizedBox(
                         width: itemWidth,
@@ -337,6 +349,7 @@ class _HomePageState extends State<HomePage> {
                           repository: repository,
                           featuredOnly: true,
                           showFilter: false,
+                          returnPath: '/',
                           embedded: true,
                         ),
                       ],
@@ -344,6 +357,13 @@ class _HomePageState extends State<HomePage> {
                     Column(
                       children: [
                         TopWidget(text: 'Top Projects', path: '/projects'),
+                        const SizedBox(height: 16),
+                        ProjectsSection(
+                          repository: projectRepository,
+                          featuredOnly: true,
+                          returnPath: '/',
+                          embedded: true,
+                        ),
                       ],
                     ),
                     Column(

@@ -4,6 +4,8 @@ import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/utils/image_downloader.dart';
 import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/project_card.dart';
+import 'package:sukonlanat_portfolio/widgets/template_app_bar.dart';
 
 class CertificateViewPage extends StatefulWidget {
   const CertificateViewPage({
@@ -79,16 +81,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
   Widget _buildCertificate(BuildContext context, CertificateModel certificate) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.white10.withAlpha(120),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          onPressed: () => context.go(widget.returnPath),
-          icon: const Icon(Icons.arrow_back),
-        ),
-      ),
+      appBar: TemplateAppBar(returnPath: widget.returnPath),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -111,6 +104,14 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                         height: 360,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null) {
+                                return child;
+                              }
+
+                              return _buildImageLoadingCard(context);
+                            },
                         errorBuilder: (context, error, stackTrace) =>
                             const SizedBox(
                               height: 360,
@@ -314,6 +315,31 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                           );
                         },
                       ),
+                      if (certificate.relatedProjects.isNotEmpty) ...[
+                        const Divider(height: 48, color: Colors.white),
+                        Text(
+                          'โครงงานที่เกี่ยวข้อง',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: certificate.relatedProjects
+                              .map(
+                                (project) => ProjectCard(
+                                  project: project,
+                                  returnPath: '/certificates/${certificate.id}',
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -375,6 +401,14 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.contain,
+                  frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) {
+                        if (wasSynchronouslyLoaded || frame != null) {
+                          return child;
+                        }
+
+                        return _buildImageLoadingCard(context);
+                      },
                   errorBuilder: (context, error, stackTrace) => const Icon(
                     Icons.image_not_supported_outlined,
                     color: Colors.white,

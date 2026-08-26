@@ -32,13 +32,15 @@ class CertificateRepository {
   Future<List<CertificateModel>> fetchCertificates({
     String table = 'certificates',
   }) async {
-    var query = _client.schema('public').from(table).select();
+    final query = _client.schema('public').from(table).select();
 
     final rows = await query.order('order_id', ascending: true);
-    return rows
-        .whereType<Map>()
-        .map((row) => CertificateModel.fromMap(Map<String, dynamic>.from(row)))
-        .toList(growable: false);
+    return _attachRelatedProjects(
+      rows
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList(growable: false),
+    );
   }
 
   Future<List<CertificateModel>> fetchFeaturedCertificates() async {
@@ -49,10 +51,12 @@ class CertificateRepository {
         .eq('is_featured', true)
         .order('order_id', ascending: true);
 
-    return rows
-        .whereType<Map>()
-        .map((row) => CertificateModel.fromMap(Map<String, dynamic>.from(row)))
-        .toList(growable: false);
+    return _attachRelatedProjects(
+      rows
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList(growable: false),
+    );
   }
 
   Future<CertificateModel?> fetchCertificateById(String id) async {
@@ -65,6 +69,59 @@ class CertificateRepository {
         .select()
         .eq('id', numericId)
         .maybeSingle();
-    return row == null ? null : CertificateModel.fromMap(row);
+    if (row == null) return null;
+    return (await _attachRelatedProjects([
+      Map<String, dynamic>.from(row),
+    ])).first;
+  }
+
+  Future<List<CertificateModel>> _attachRelatedProjects(
+    List<Map<String, dynamic>> certificates,
+  ) async {
+    if (certificates.isEmpty) return const [];
+    final certificateIds = certificates
+        .map((row) => row['id'])
+        .whereType<num>()
+        .toList();
+    final links = await _client
+        .schema('public')
+        .from('project_competitions')
+        .select('competition_id, project_id')
+        .inFilter('competition_id', certificateIds);
+    final projectIds = links
+        .whereType<Map>()
+        .map((row) => row['project_id'])
+        .whereType<num>()
+        .toSet()
+        .toList();
+    if (projectIds.isEmpty) {
+      return certificates.map(CertificateModel.fromMap).toList(growable: false);
+    }
+    final projects = await _client
+        .schema('public')
+        .from('projects')
+        .select()
+        .inFilter('id', projectIds);
+    final projectsById = <num, Map<String, dynamic>>{
+      for (final row in projects.whereType<Map>())
+        row['id'] as num: Map<String, dynamic>.from(row),
+    };
+    final relatedByCertificate = <num, List<Map<String, dynamic>>>{};
+    for (final link in links.whereType<Map>()) {
+      final certificateId = link['competition_id'];
+      final project = projectsById[link['project_id']];
+      if (certificateId is num && project != null) {
+        relatedByCertificate.putIfAbsent(certificateId, () => []).add(project);
+      }
+    }
+    return certificates
+        .map((certificate) {
+          return CertificateModel.fromMap({
+            ...certificate,
+            'related_projects':
+                relatedByCertificate[certificate['id']] ?? const [],
+          });
+        })
+        .toList(growable: false);
   }
 }

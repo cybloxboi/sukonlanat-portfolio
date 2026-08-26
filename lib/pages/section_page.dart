@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sukonlanat_portfolio/widgets/certificates_section.dart';
 import 'package:sukonlanat_portfolio/widgets/empty_section.dart';
+import 'package:sukonlanat_portfolio/widgets/projects_section.dart';
 import 'package:sukonlanat_portfolio/widgets/template_scaffold.dart';
 
 class SectionPage extends StatelessWidget {
@@ -21,6 +22,8 @@ class SectionPage extends StatelessWidget {
       title: title,
       body: title == 'Certificates'
           ? const CertificatesSection()
+          : title == 'Projects'
+          ? const ProjectsSection()
           : EmptySection(
               description: description,
               selectedCertificate: selectedCertificate,

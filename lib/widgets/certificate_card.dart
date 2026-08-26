@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
+import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
 
 class CertificateCard extends StatelessWidget {
   const CertificateCard({
     super.key,
     required this.certificate,
-    this.fromHome = false,
+    this.returnPath = '/certificates',
   });
 
   final CertificateModel certificate;
-  final bool fromHome;
+  final String returnPath;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +20,10 @@ class CertificateCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           context.go(
-            fromHome
-                ? '/certificates/${certificate.id}?from=home'
-                : '/certificates/${certificate.id}',
+            Uri(
+              path: '/certificates/${certificate.id}',
+              queryParameters: {'returnPath': returnPath},
+            ).toString(),
           );
         },
         child: SizedBox(
@@ -38,6 +40,17 @@ class CertificateCard extends StatelessWidget {
                       child: Image.network(
                         certificate.backgroundUrl,
                         fit: BoxFit.cover,
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null) {
+                                return child;
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: LoadingWidget(),
+                              );
+                            },
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(
                               Icons.image_not_supported_outlined,
