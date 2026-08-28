@@ -52,7 +52,7 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
             : SizedBox(
                 width: double.infinity,
                 child: Wrap(
-                  alignment: WrapAlignment.center,
+                  alignment: WrapAlignment.start,
                   spacing: 16,
                   runSpacing: 32,
                   children: activities
@@ -87,14 +87,11 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
                 ),
               ),
             if (widget.embedded)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: activityList,
-              )
+              activityList
             else
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   child: activityList,
                 ),
               ),

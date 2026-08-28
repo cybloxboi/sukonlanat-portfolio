@@ -130,10 +130,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                 ),
               ),
             if (widget.embedded)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: certificateList,
-              )
+              certificateList
             else
               Expanded(
                 child: SingleChildScrollView(

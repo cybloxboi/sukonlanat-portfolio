@@ -48,7 +48,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
         }
 
         final projects = snapshot.data ?? const <ProjectModel>[];
-        final content = projects.isEmpty
+        final projectList = projects.isEmpty
             ? const Center(child: Text('ไม่พบข้อมูลโครงการ'))
             : Wrap(
                 alignment: WrapAlignment.center,
@@ -64,30 +64,37 @@ class _ProjectsSectionState extends State<ProjectsSection> {
 
         final latestCreatedAt = _lastestCreatedAt(projects);
 
-        return widget.embedded
-            ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: content,
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (latestCreatedAt != null)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                      child: Text(
-                        'แก้ไขล่าสุด: ${_formatTimestamp(latestCreatedAt)}',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                      child: content,
-                    ),
-                  ),
-                ],
-              );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!widget.embedded)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                child: Row(
+                  children: [
+                    if (latestCreatedAt != null)
+                      Expanded(
+                        child: Text(
+                          'แก้ไขล่าสุด: ${_formatTimestamp(latestCreatedAt)}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      )
+                    else
+                      const Spacer(),
+                  ],
+                ),
+              ),
+            if (widget.embedded)
+              projectList
+            else
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: projectList,
+                ),
+              ),
+          ],
+        );
       },
     );
   }
