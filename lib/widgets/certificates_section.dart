@@ -137,7 +137,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
             else
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                   child: certificateList,
                 ),
               ),

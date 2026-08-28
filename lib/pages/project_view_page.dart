@@ -70,6 +70,9 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
           onPressed: () => launchUrl(Uri.parse(project.githubUrl)),
           icon: const Icon(Icons.code),
           label: const Text('ดูซอร์สโค้ดผ่าน GitHub'),
+          style: ButtonStyle(
+            foregroundColor: WidgetStatePropertyAll(Colors.white),
+          ),
         ),
     ];
 
@@ -226,7 +229,7 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
                       if (project.relatedCertificates.isNotEmpty) ...[
                         const Divider(height: 48, color: Colors.white),
                         Text(
-                          'กิจกรรมที่เกี่ยวข้อง',
+                          'การแข่งขันที่เกี่ยวข้อง',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

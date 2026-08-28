@@ -17,7 +17,6 @@ class TemplateAppBar extends StatelessWidget implements PreferredSizeWidget {
       ('certificates', 'Certificates'),
       ('projects', 'Projects'),
       ('activities', 'Activities'),
-      ('about_me', 'About Me'),
     ];
 
     return AppBar(

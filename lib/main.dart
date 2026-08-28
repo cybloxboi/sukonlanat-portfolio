@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sukonlanat_portfolio/pages/activity_view_page.dart';
 import 'package:sukonlanat_portfolio/pages/home_page.dart';
 import 'package:sukonlanat_portfolio/pages/certificate_view_page.dart';
 import 'package:sukonlanat_portfolio/pages/section_page.dart';
@@ -100,11 +101,7 @@ class _MainAppState extends State<MainApp> {
         path: '/certificates',
         pageBuilder: (context, state) => _transitionPage(
           state,
-          SectionPage(
-            title: 'Certificates',
-            description: 'Certificates page',
-            selectedCertificate: state.uri.queryParameters['certificate'],
-          ),
+          SectionPage(title: 'Certificates', description: 'Certificates page'),
         ),
       ),
       GoRoute(
@@ -146,10 +143,14 @@ class _MainAppState extends State<MainApp> {
         ),
       ),
       GoRoute(
-        path: '/about_me',
+        path: '/activities/:activityId',
         pageBuilder: (context, state) => _transitionPage(
           state,
-          const SectionPage(title: 'About Me', description: 'About Me page'),
+          ActivityViewPage.fromId(
+            activityId: state.pathParameters['activityId'] ?? '',
+            returnPath:
+                state.uri.queryParameters['returnPath'] ?? '/activities',
+          ),
         ),
       ),
     ],

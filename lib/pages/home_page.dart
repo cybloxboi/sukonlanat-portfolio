@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sukonlanat_portfolio/models/activity_model.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/models/project_model.dart';
+import 'package:sukonlanat_portfolio/services/activity_repository.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/services/project_repository.dart';
 import 'package:sukonlanat_portfolio/services/university_data_controller.dart';
+import 'package:sukonlanat_portfolio/widgets/activities_section.dart';
 import 'package:sukonlanat_portfolio/widgets/certificates_section.dart';
 import 'package:sukonlanat_portfolio/widgets/fetch_university_data.dart';
 import 'package:sukonlanat_portfolio/widgets/markdown_reader.dart';
@@ -23,17 +26,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late Future<List<CertificateModel>> _certificatesFuture;
-  late CertificateRepository repository;
+  late CertificateRepository certificateRepository;
   late ProjectRepository projectRepository;
+  late ActivityRepository activityRepository;
 
   @override
   void initState() {
     super.initState();
 
-    repository = CertificateRepository();
+    certificateRepository = CertificateRepository();
     projectRepository = ProjectRepository();
-    _certificatesFuture = repository.fetchCertificates();
+    activityRepository = ActivityRepository();
 
     _loadUniversityData();
   }
@@ -107,7 +110,6 @@ class _HomePageState extends State<HomePage> {
                       value: 'activities',
                       child: Text('Activites'),
                     ),
-                    PopupMenuItem(value: 'about_me', child: Text('About Me')),
                   ],
                 ),
                 const SizedBox(width: 8),
@@ -131,13 +133,6 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () => context.go('/activities'),
                   child: const Text(
                     'Activites',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => context.go('/about_me'),
-                  child: const Text(
-                    'About Me',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -182,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         width: itemWidth,
                         child: FutureBuilder<List<CertificateModel>>(
-                          future: _certificatesFuture,
+                          future: certificateRepository.fetchCertificates(),
                           builder: (context, snapshot) => _buildStat(
                             'Certificates',
                             snapshot.data?.length ?? 0,
@@ -203,7 +198,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                       SizedBox(
                         width: itemWidth,
-                        child: _buildStat('Activities', 10, context),
+                        child: FutureBuilder<List<ActivityModel>>(
+                          future: activityRepository.fetchActivities(),
+                          builder: (context, snapshot) => _buildStat(
+                            'Activities',
+                            snapshot.data?.length ?? 0,
+                            context,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -346,7 +348,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: 16),
                         CertificatesSection(
-                          repository: repository,
+                          repository: certificateRepository,
                           featuredOnly: true,
                           showFilter: false,
                           returnPath: '/',
@@ -369,6 +371,12 @@ class _HomePageState extends State<HomePage> {
                     Column(
                       children: [
                         TopWidget(text: 'Top Activities', path: '/activities'),
+                        const SizedBox(height: 16),
+                        ActivitiesSection(
+                          repository: activityRepository,
+                          returnPath: '/',
+                          embedded: true,
+                        ),
                       ],
                     ),
                   ],

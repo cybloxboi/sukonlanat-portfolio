@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sukonlanat_portfolio/models/project_model.dart';
 import 'package:sukonlanat_portfolio/services/project_repository.dart';
+import 'package:sukonlanat_portfolio/utils/thai_date_formatter.dart';
 import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
 import 'package:sukonlanat_portfolio/widgets/project_card.dart';
 
@@ -61,16 +62,55 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                 }).toList(),
               );
 
+        final latestCreatedAt = _lastestCreatedAt(projects);
+
         return widget.embedded
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: content,
               )
-            : SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                child: content,
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (latestCreatedAt != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: Text(
+                        'แก้ไขล่าสุด: ${_formatTimestamp(latestCreatedAt)}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                      child: content,
+                    ),
+                  ),
+                ],
               );
       },
     );
+  }
+
+  DateTime? _lastestCreatedAt(List<ProjectModel> projects) {
+    DateTime? latest;
+
+    for (final project in projects) {
+      final createdAt = project.createdAt;
+
+      if (createdAt != null && (latest == null || createdAt.isAfter(latest))) {
+        latest = createdAt;
+      }
+    }
+
+    return latest;
+  }
+
+  String _formatTimestamp(DateTime dateTime) {
+    final localDateTime = dateTime.toLocal();
+    final hour = localDateTime.hour.toString().padLeft(2, '0');
+    final minute = localDateTime.minute.toString().padLeft(2, '0');
+
+    return '${formatThaiDate(localDateTime)} $hour:$minute น.';
   }
 }
