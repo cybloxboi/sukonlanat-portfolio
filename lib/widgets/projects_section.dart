@@ -50,16 +50,21 @@ class _ProjectsSectionState extends State<ProjectsSection> {
         final projects = snapshot.data ?? const <ProjectModel>[];
         final projectList = projects.isEmpty
             ? const Center(child: Text('ไม่พบข้อมูลโครงการ'))
-            : Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 16,
-                runSpacing: 32,
-                children: projects.map((project) {
-                  return ProjectCard(
-                    project: project,
-                    returnPath: widget.returnPath,
-                  );
-                }).toList(),
+            : SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  alignment: widget.embedded
+                      ? WrapAlignment.center
+                      : WrapAlignment.start,
+                  spacing: 16,
+                  runSpacing: 32,
+                  children: projects.map((project) {
+                    return ProjectCard(
+                      project: project,
+                      returnPath: widget.returnPath,
+                    );
+                  }).toList(),
+                ),
               );
 
         final latestCreatedAt = _lastestCreatedAt(projects);

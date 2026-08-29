@@ -11,7 +11,7 @@
             ],
             "args": [
                 "--web-port=61836",
-                "--web-launch-url=http://localhost:61836/?id=sit-kmutt-ar"
+                "--web-launch-url=http://localhost:61836/?id=eg-mu"
             ]
         },
         {

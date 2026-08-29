@@ -76,7 +76,9 @@ class _CertificatesSectionState extends State<CertificatesSection> {
             : SizedBox(
                 width: double.infinity,
                 child: Wrap(
-                  alignment: WrapAlignment.center,
+                  alignment: widget.embedded
+                      ? WrapAlignment.center
+                      : WrapAlignment.start,
                   spacing: 16,
                   runSpacing: 32,
                   children: displayedCertificates
@@ -134,7 +136,7 @@ class _CertificatesSectionState extends State<CertificatesSection> {
             else
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                   child: certificateList,
                 ),
               ),

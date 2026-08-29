@@ -52,7 +52,9 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
             : SizedBox(
                 width: double.infinity,
                 child: Wrap(
-                  alignment: WrapAlignment.start,
+                  alignment: widget.embedded
+                      ? WrapAlignment.center
+                      : WrapAlignment.start,
                   spacing: 16,
                   runSpacing: 32,
                   children: activities
@@ -67,7 +69,6 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
               );
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!widget.embedded)
               Padding(
