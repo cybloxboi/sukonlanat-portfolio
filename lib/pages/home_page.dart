@@ -29,6 +29,9 @@ class _HomePageState extends State<HomePage> {
   late CertificateRepository certificateRepository;
   late ProjectRepository projectRepository;
   late ActivityRepository activityRepository;
+  late Future<List<CertificateModel>> _certificatesFuture;
+  late Future<List<ProjectModel>> _projectsFuture;
+  late Future<List<ActivityModel>> _activitiesFuture;
 
   @override
   void initState() {
@@ -37,6 +40,9 @@ class _HomePageState extends State<HomePage> {
     certificateRepository = CertificateRepository();
     projectRepository = ProjectRepository();
     activityRepository = ActivityRepository();
+    _certificatesFuture = certificateRepository.fetchCertificates();
+    _projectsFuture = projectRepository.fetchProjects();
+    _activitiesFuture = activityRepository.fetchActivities();
 
     _loadUniversityData();
   }
@@ -177,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         width: itemWidth,
                         child: FutureBuilder<List<CertificateModel>>(
-                          future: certificateRepository.fetchCertificates(),
+                          future: _certificatesFuture,
                           builder: (context, snapshot) => _buildStat(
                             'Certificates',
                             snapshot.data?.length ?? 0,
@@ -188,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         width: itemWidth,
                         child: FutureBuilder<List<ProjectModel>>(
-                          future: projectRepository.fetchProjects(),
+                          future: _projectsFuture,
                           builder: (context, snapshot) => _buildStat(
                             'Projects',
                             snapshot.data?.length ?? 0,
@@ -199,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         width: itemWidth,
                         child: FutureBuilder<List<ActivityModel>>(
-                          future: activityRepository.fetchActivities(),
+                          future: _activitiesFuture,
                           builder: (context, snapshot) => _buildStat(
                             'Activities',
                             snapshot.data?.length ?? 0,
@@ -374,6 +380,7 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 16),
                         ActivitiesSection(
                           repository: activityRepository,
+                          featuredOnly: true,
                           returnPath: '/',
                           embedded: true,
                         ),

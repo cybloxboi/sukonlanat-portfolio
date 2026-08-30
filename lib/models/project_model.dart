@@ -1,16 +1,17 @@
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
+import 'package:sukonlanat_portfolio/utils/image_url.dart';
 
 class ProjectModel {
   factory ProjectModel.fromMap(Map<String, dynamic> map) {
     return ProjectModel(
       id: _string(map['id']),
       isFeatured: _bool(map['is_featured']),
-      backgroundUrl: _string(map['background_url']),
+      backgroundUrl: normalizeRemoteImageUrl(map['background_url']),
       name: _string(map['name']),
       description: _string(map['description']),
       githubUrl: _string(map['github_url']),
       projectUrl: _string(map['project_url']),
-      imagesUrl: _images(map['images_url']),
+      imagesUrl: normalizeRemoteImageUrls(map['images_url']),
       date: DateTime.tryParse(_string(map['date'])),
       createdAt: DateTime.tryParse(_string(map['created_at'])),
       relatedCertificates: _relatedCertificates(map['related_certificates']),
@@ -50,16 +51,6 @@ class ProjectModel {
     if (value is num) return value != 0;
 
     return _string(value).toLowerCase() == 'true';
-  }
-
-  static List<String> _images(Object? value) {
-    if (value is List) {
-      return value.map(_string).where((item) => item.isNotEmpty).toList();
-    }
-
-    final text = _string(value);
-
-    return text.isEmpty ? const [] : [text];
   }
 
   static List<CertificateModel> _relatedCertificates(Object? value) {

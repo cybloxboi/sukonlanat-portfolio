@@ -9,11 +9,13 @@ class ActivitiesSection extends StatefulWidget {
   const ActivitiesSection({
     super.key,
     this.repository,
+    this.featuredOnly = false,
     this.returnPath = '/activities',
     this.embedded = false,
   });
 
   final ActivityRepository? repository;
+  final bool featuredOnly;
   final String returnPath;
   final bool embedded;
 
@@ -28,7 +30,9 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
   void initState() {
     super.initState();
     final repository = widget.repository ?? ActivityRepository();
-    _activitiesFuture = repository.fetchActivities();
+    _activitiesFuture = widget.featuredOnly
+        ? repository.fetchFeaturedActivities()
+        : repository.fetchActivities();
   }
 
   @override
@@ -45,28 +49,10 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
         }
 
         final activities = snapshot.data ?? const <ActivityModel>[];
+        final displayedActivities = widget.embedded
+            ? activities.take(5).toList(growable: false)
+            : activities;
         final latestCreatedAt = _latestCreatedAt(activities);
-
-        final activityList = activities.isEmpty
-            ? const Center(child: Text('ไม่พบข้อมูลกิจกรรม'))
-            : SizedBox(
-                width: double.infinity,
-                child: Wrap(
-                  alignment: widget.embedded
-                      ? WrapAlignment.center
-                      : WrapAlignment.start,
-                  spacing: 16,
-                  runSpacing: 32,
-                  children: activities
-                      .map(
-                        (activity) => ActivityCard(
-                          activity: activity,
-                          returnPath: widget.returnPath,
-                        ),
-                      )
-                      .toList(),
-                ),
-              );
 
         return Column(
           children: [
@@ -87,18 +73,40 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
                   ],
                 ),
               ),
-            if (widget.embedded)
-              activityList
+            if (displayedActivities.isEmpty)
+              if (widget.embedded)
+                const Center(child: Text('ไม่พบข้อมูลกิจกรรม'))
+              else
+                const Expanded(child: Center(child: Text('ไม่พบข้อมูลกิจกรรม')))
+            else if (widget.embedded)
+              _buildActivityGrid(displayedActivities)
             else
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: activityList,
-                ),
-              ),
+              Expanded(child: _buildActivityGrid(displayedActivities)),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildActivityGrid(List<ActivityModel> activities) {
+    return GridView.builder(
+      padding: widget.embedded
+          ? EdgeInsets.zero
+          : const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      shrinkWrap: widget.embedded,
+      physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
+      cacheExtent: 500,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 320,
+        mainAxisExtent: 360,
+        mainAxisSpacing: 32,
+        crossAxisSpacing: 16,
+      ),
+      itemCount: activities.length,
+      itemBuilder: (context, index) => ActivityCard(
+        activity: activities[index],
+        returnPath: widget.returnPath,
+      ),
     );
   }
 

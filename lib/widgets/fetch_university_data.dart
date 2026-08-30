@@ -167,8 +167,12 @@ class FetchUniversityData extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     CircleAvatar(
-                                      foregroundImage: AssetImage(
-                                        'assets/images/profile_image.png',
+                                      foregroundImage: ResizeImage(
+                                        const AssetImage(
+                                          'assets/images/profile_image.png',
+                                        ),
+                                        width: 200,
+                                        height: 200,
                                       ),
                                       radius: 50,
                                     ),
@@ -406,6 +410,8 @@ class FetchUniversityData extends StatelessWidget {
                                         Image.asset(
                                           'assets/images/github_logo_${Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light'}.png',
                                           height: 20,
+                                          cacheWidth: 40,
+                                          filterQuality: FilterQuality.low,
                                         ),
                                         const SizedBox(width: 8),
                                         Text('GitHub'),

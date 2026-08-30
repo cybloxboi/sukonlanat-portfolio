@@ -66,31 +66,10 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                   (!_featuredFilter || certificate.isFeatured);
             })
             .toList(growable: false);
-        final displayedCertificates = widget.featuredOnly
+        final displayedCertificates = widget.featuredOnly || widget.embedded
             ? filtered.take(5).toList(growable: false)
             : filtered;
         final latestCreatedAt = _latestCreatedAt(certificates);
-
-        final certificateList = displayedCertificates.isEmpty
-            ? const Center(child: Text('ไม่พบข้อมูลเกียรติบัตร'))
-            : SizedBox(
-                width: double.infinity,
-                child: Wrap(
-                  alignment: widget.embedded
-                      ? WrapAlignment.center
-                      : WrapAlignment.start,
-                  spacing: 16,
-                  runSpacing: 32,
-                  children: displayedCertificates
-                      .map(
-                        (certificate) => CertificateCard(
-                          certificate: certificate,
-                          returnPath: widget.returnPath,
-                        ),
-                      )
-                      .toList(),
-                ),
-              );
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,18 +110,42 @@ class _CertificatesSectionState extends State<CertificatesSection> {
                   ],
                 ),
               ),
-            if (widget.embedded)
-              certificateList
+            if (displayedCertificates.isEmpty)
+              if (widget.embedded)
+                const Center(child: Text('ไม่พบข้อมูลเกียรติบัตร'))
+              else
+                const Expanded(
+                  child: Center(child: Text('ไม่พบข้อมูลเกียรติบัตร')),
+                )
+            else if (widget.embedded)
+              _buildCertificateGrid(displayedCertificates)
             else
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: certificateList,
-                ),
-              ),
+              Expanded(child: _buildCertificateGrid(displayedCertificates)),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildCertificateGrid(List<CertificateModel> certificates) {
+    return GridView.builder(
+      padding: widget.embedded
+          ? EdgeInsets.zero
+          : const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      shrinkWrap: widget.embedded,
+      physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
+      cacheExtent: 500,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 320,
+        mainAxisExtent: 360,
+        mainAxisSpacing: 32,
+        crossAxisSpacing: 16,
+      ),
+      itemCount: certificates.length,
+      itemBuilder: (context, index) => CertificateCard(
+        certificate: certificates[index],
+        returnPath: widget.returnPath,
+      ),
     );
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/models/activity_model.dart';
-import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/optimized_network_image.dart';
 
 class ActivityCard extends StatelessWidget {
   const ActivityCard({
@@ -37,25 +37,10 @@ class ActivityCard extends StatelessWidget {
                     width: double.infinity,
                     child: ColoredBox(
                       color: Colors.black12,
-                      child: Image.network(
-                        activity.backgroundUrl,
+                      child: OptimizedNetworkImage(
+                        url: activity.backgroundUrl,
                         fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded || frame != null) {
-                                return child;
-                              }
-
-                              return Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: LoadingWidget(),
-                              );
-                            },
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 48,
-                            ),
+                        filterQuality: FilterQuality.low,
                       ),
                     ),
                   ),

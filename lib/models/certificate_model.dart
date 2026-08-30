@@ -1,6 +1,7 @@
 import 'package:sukonlanat_portfolio/models/award_categories.dart';
 import 'package:sukonlanat_portfolio/models/competition_level.dart';
 import 'package:sukonlanat_portfolio/models/project_model.dart';
+import 'package:sukonlanat_portfolio/utils/image_url.dart';
 
 class CertificateModel {
   factory CertificateModel.fromMap(Map<String, dynamic> map) {
@@ -15,7 +16,9 @@ class CertificateModel {
       id: _string(map['id']),
       name: _string(map['name']),
       isFeatured: _bool(map['is_featured'] ?? map['isFeatured']),
-      backgroundUrl: _string(map['background_url'] ?? map['backgroundUrl']),
+      backgroundUrl: normalizeRemoteImageUrl(
+        map['background_url'] ?? map['backgroundUrl'],
+      ),
       description: _string(map['description']),
       organizer: _string(map['organizer']),
       awardCategories: AwardCategories.fromMap({
@@ -37,7 +40,9 @@ class CertificateModel {
             levelMap?['name'],
         'color': map['competition_level_color'] ?? levelMap?['color'],
       }),
-      imagesUrl: _images(map['images_url'] ?? map['imagesUrl']),
+      imagesUrl: normalizeRemoteImageUrls(
+        map['images_url'] ?? map['imagesUrl'],
+      ),
       datePeriod: _string(map['date_period'] ?? map['datePeriod']),
       createdAt: DateTime.tryParse(_string(map['created_at'])),
       relatedProjects: _relatedProjects(map['related_projects']),
@@ -95,16 +100,6 @@ class CertificateModel {
     }
 
     return null;
-  }
-
-  static List<String> _images(Object? value) {
-    if (value is List) {
-      return value.map(_string).where((item) => item.isNotEmpty).toList();
-    }
-
-    final text = _string(value);
-
-    return text.isEmpty ? const [] : [text];
   }
 
   static List<ProjectModel> _relatedProjects(Object? value) {

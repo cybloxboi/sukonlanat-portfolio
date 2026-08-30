@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/models/project_model.dart';
-import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/optimized_network_image.dart';
 
 class ProjectCard extends StatelessWidget {
   const ProjectCard({
@@ -35,21 +35,10 @@ class ProjectCard extends StatelessWidget {
                     width: double.infinity,
                     child: ColoredBox(
                       color: Colors.black12,
-                      child: Image.network(
-                        project.backgroundUrl,
+                      child: OptimizedNetworkImage(
+                        url: project.backgroundUrl,
                         fit: BoxFit.cover,
-                        frameBuilder: (context, child, frame, sync) =>
-                            sync || frame != null
-                            ? child
-                            : Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: LoadingWidget(),
-                              ),
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 48,
-                            ),
+                        filterQuality: FilterQuality.low,
                       ),
                     ),
                   ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/optimized_network_image.dart';
 
 class MarkdownReader extends StatefulWidget {
   const MarkdownReader({
@@ -89,6 +90,14 @@ class _MarkdownReaderState extends State<MarkdownReader> {
         final markdownBody = MarkdownBody(
           data: displayedData,
           shrinkWrap: true,
+          sizedImageBuilder: (config) => OptimizedNetworkImage(
+            url: config.uri.toString(),
+            width: config.width,
+            height: config.height,
+            fit: BoxFit.contain,
+            maxDecodeDimension: 2048,
+            errorIconSize: 32,
+          ),
           styleSheet: MarkdownStyleSheet(
             strong: TextStyle(
               color: widget.strongColor,

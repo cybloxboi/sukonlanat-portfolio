@@ -6,10 +6,20 @@ class ActivityRepository {
     : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
+  Future<List<ActivityModel>>? _activitiesCache;
+  Future<List<ActivityModel>>? _featuredActivitiesCache;
   PostgrestFilterBuilder<PostgrestList> get query =>
       _client.schema('public').from('activities').select();
 
   Future<List<ActivityModel>> fetchActivities() async {
+    return _activitiesCache ??= _fetchActivities();
+  }
+
+  Future<List<ActivityModel>> fetchFeaturedActivities() async {
+    return _featuredActivitiesCache ??= _fetchFeaturedActivities();
+  }
+
+  Future<List<ActivityModel>> _fetchActivities() async {
     final rows = await query.order('order_id', ascending: true);
     return rows
         .whereType<Map>()
@@ -17,7 +27,7 @@ class ActivityRepository {
         .toList(growable: false);
   }
 
-  Future<List<ActivityModel>> fetchFeaturedActivities() async {
+  Future<List<ActivityModel>> _fetchFeaturedActivities() async {
     final rows = await query
         .eq('is_featured', true)
         .order('order_id', ascending: true);

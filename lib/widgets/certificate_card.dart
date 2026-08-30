@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sukonlanat_portfolio/models/certificate_model.dart';
-import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/optimized_network_image.dart';
 
 class CertificateCard extends StatelessWidget {
   const CertificateCard({
@@ -37,25 +37,10 @@ class CertificateCard extends StatelessWidget {
                     width: double.infinity,
                     child: ColoredBox(
                       color: Colors.black12,
-                      child: Image.network(
-                        certificate.backgroundUrl,
+                      child: OptimizedNetworkImage(
+                        url: certificate.backgroundUrl,
                         fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded || frame != null) {
-                                return child;
-                              }
-
-                              return Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: LoadingWidget(),
-                              );
-                            },
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 48,
-                            ),
+                        filterQuality: FilterQuality.low,
                       ),
                     ),
                   ),
@@ -95,36 +80,14 @@ class CertificateCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 180),
-                          child: Chip(
-                            label: Text(
-                              certificate.awardCategories.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: certificate.awardCategories.color,
-                          ),
+                        _buildCategoryChip(
+                          certificate.awardCategories.name,
+                          certificate.awardCategories.color,
                         ),
                         const SizedBox(height: 8),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 180),
-                          child: Chip(
-                            label: Text(
-                              certificate.competitionLevel.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: certificate.competitionLevel.color,
-                          ),
+                        _buildCategoryChip(
+                          certificate.competitionLevel.name,
+                          certificate.competitionLevel.color,
                         ),
                       ],
                     ),
@@ -135,6 +98,27 @@ class CertificateCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(String label, Color color) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 140),
+        child: Chip(
+          label: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.left,
+            style: const TextStyle(fontSize: 10, color: Colors.white),
+          ),
+          padding: EdgeInsets.zero,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+          backgroundColor: color,
         ),
       ),
     );

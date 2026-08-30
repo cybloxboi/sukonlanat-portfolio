@@ -48,24 +48,9 @@ class _ProjectsSectionState extends State<ProjectsSection> {
         }
 
         final projects = snapshot.data ?? const <ProjectModel>[];
-        final projectList = projects.isEmpty
-            ? const Center(child: Text('ไม่พบข้อมูลโครงการ'))
-            : SizedBox(
-                width: double.infinity,
-                child: Wrap(
-                  alignment: widget.embedded
-                      ? WrapAlignment.center
-                      : WrapAlignment.start,
-                  spacing: 16,
-                  runSpacing: 32,
-                  children: projects.map((project) {
-                    return ProjectCard(
-                      project: project,
-                      returnPath: widget.returnPath,
-                    );
-                  }).toList(),
-                ),
-              );
+        final displayedProjects = widget.featuredOnly
+            ? projects.take(5).toList(growable: false)
+            : projects;
 
         final latestCreatedAt = _lastestCreatedAt(projects);
 
@@ -89,18 +74,38 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                   ],
                 ),
               ),
-            if (widget.embedded)
-              projectList
+            if (displayedProjects.isEmpty)
+              if (widget.embedded)
+                const Center(child: Text('ไม่พบข้อมูลโครงการ'))
+              else
+                const Expanded(child: Center(child: Text('ไม่พบข้อมูลโครงการ')))
+            else if (widget.embedded)
+              _buildProjectGrid(displayedProjects)
             else
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: projectList,
-                ),
-              ),
+              Expanded(child: _buildProjectGrid(displayedProjects)),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildProjectGrid(List<ProjectModel> projects) {
+    return GridView.builder(
+      padding: widget.embedded
+          ? EdgeInsets.zero
+          : const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      shrinkWrap: widget.embedded,
+      physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
+      cacheExtent: 500,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 320,
+        mainAxisExtent: 360,
+        mainAxisSpacing: 32,
+        crossAxisSpacing: 16,
+      ),
+      itemCount: projects.length,
+      itemBuilder: (context, index) =>
+          ProjectCard(project: projects[index], returnPath: widget.returnPath),
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:sukonlanat_portfolio/models/certificate_model.dart';
 import 'package:sukonlanat_portfolio/services/certificate_repository.dart';
 import 'package:sukonlanat_portfolio/utils/image_downloader.dart';
 import 'package:sukonlanat_portfolio/widgets/loading_widget.dart';
+import 'package:sukonlanat_portfolio/widgets/optimized_network_image.dart';
 import 'package:sukonlanat_portfolio/widgets/project_card.dart';
 import 'package:sukonlanat_portfolio/widgets/template_app_bar.dart';
 
@@ -49,7 +50,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
         future: _certificateFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Scaffold(body: Center(child: LoadingWidget()));
+            return const Scaffold(body: Center(child: LoadingWidget()));
           }
 
           if (snapshot.hasError || snapshot.data == null) {
@@ -79,282 +80,246 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
   }
 
   Widget _buildCertificate(BuildContext context, CertificateModel certificate) {
+    final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: TemplateAppBar(returnPath: widget.returnPath),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  if (MediaQuery.sizeOf(context).width < 600) {
-                    return ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.black, Colors.transparent],
-                          stops: [0.3, 1.0],
-                        ).createShader(bounds);
-                      },
-                      blendMode: BlendMode.dstIn,
-                      child: Image.network(
-                        certificate.backgroundUrl,
-                        height: 360,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded || frame != null) {
-                                return child;
-                              }
-
-                              return _buildImageLoadingCard(context);
-                            },
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox(
-                              height: 360,
-                              child: Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 64,
-                              ),
-                            ),
-                      ),
-                    );
-                  }
-
-                  final imageWidth = constraints.maxWidth.clamp(0.0, 900.0);
-
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      child: SizedBox(
-                        width: imageWidth,
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Image.network(
-                            certificate.backgroundUrl,
-                            fit: BoxFit.cover,
-                            frameBuilder:
-                                (
-                                  context,
-                                  child,
-                                  frame,
-                                  wasSynchronouslyLoaded,
-                                ) {
-                                  if (wasSynchronouslyLoaded || frame != null) {
-                                    return child;
-                                  }
-
-                                  return _buildImageLoadingCard(context);
-                                },
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Center(
-                                child: Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 64,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              Transform.translate(
-                offset: Offset(
-                  0,
-                  MediaQuery.sizeOf(context).width > 600 ? 0 : -100,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  certificate.name,
-                                  style: TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 24),
-                              if (certificate.isFeatured)
-                                const Icon(
-                                  Icons.star_rounded,
-                                  color: Colors.yellow,
-                                  size: 30,
-                                ),
-                            ],
-                          ),
-                          Wrap(
-                            runSpacing: 16,
-                            spacing: 16,
-                            children: [
-                              Chip(
-                                label: Text(
-                                  certificate.awardCategories.name,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor:
-                                    certificate.awardCategories.color,
-                              ),
-                              Chip(
-                                label: Text(
-                                  certificate.competitionLevel.name,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor:
-                                    certificate.competitionLevel.color,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (certificate.datePeriod.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            'วันที่: ${certificate.datePeriod}',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      Text(
-                        'ผู้จัด: ${certificate.organizer}',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      const Divider(height: 32, color: Colors.white),
-                      Text(
-                        certificate.description,
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                      const Divider(height: 32, color: Colors.white),
-                      Text(
-                        'เกียรติบัตร และรูปภาพกิจกรรม',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          return GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                SliverGridDelegateWithMaxCrossAxisExtent(
-                                  mainAxisSpacing: 32,
-                                  crossAxisSpacing: 32,
-                                  childAspectRatio: 4 / 3,
-                                  maxCrossAxisExtent: 400,
-                                ),
-                            itemCount: certificate.imagesUrl.length,
-                            itemBuilder: (context, index) {
-                              final imageUrl = certificate.imagesUrl[index];
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                clipBehavior: Clip.antiAlias,
-                                child: Material(
-                                  color: Theme.of(context).cardColor,
-                                  child: InkWell(
-                                    onTap: () => _showImageViewer(
-                                      context,
-                                      imageUrl,
-                                      index,
-                                    ),
-                                    child: Image.network(
-                                      imageUrl,
-                                      fit: BoxFit.cover,
-                                      frameBuilder:
-                                          (
-                                            context,
-                                            child,
-                                            frame,
-                                            wasSynchronouslyLoaded,
-                                          ) {
-                                            if (wasSynchronouslyLoaded ||
-                                                frame != null) {
-                                              return child;
-                                            }
-
-                                            return _buildImageLoadingCard(
-                                              context,
-                                            );
-                                          },
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return const Center(
-                                          child: Icon(
-                                            Icons.image_not_supported_outlined,
-                                            size: 48,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                      if (certificate.relatedProjects.isNotEmpty) ...[
-                        const Divider(height: 48, color: Colors.white),
-                        Text(
-                          'โครงงานที่เกี่ยวข้อง',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
+      body: CustomScrollView(
+        cacheExtent: 400,
+        slivers: [
+          SliverToBoxAdapter(
+            child: _buildHero(
+              context,
+              certificate.backgroundUrl,
+              overlayTitle: isNarrowScreen
+                  ? _buildTitle(context, certificate)
+                  : null,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Transform.translate(
+              offset: Offset(0, 0),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: [
+                        if (!isNarrowScreen) _buildTitle(context, certificate),
                         Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: 16,
                           runSpacing: 16,
-                          children: certificate.relatedProjects
-                              .map(
-                                (project) => ProjectCard(
-                                  project: project,
-                                  returnPath: '/certificates/${certificate.id}',
-                                ),
-                              )
-                              .toList(),
+                          spacing: 16,
+                          children: [
+                            Chip(
+                              label: Text(
+                                certificate.awardCategories.name,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor:
+                                  certificate.awardCategories.color,
+                            ),
+                            Chip(
+                              label: Text(
+                                certificate.competitionLevel.name,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              backgroundColor:
+                                  certificate.competitionLevel.color,
+                            ),
+                          ],
                         ),
                       ],
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (certificate.datePeriod.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'วันที่: ${certificate.datePeriod}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    Text(
+                      'ผู้จัด: ${certificate.organizer}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const Divider(height: 32, color: Colors.white),
+                    Text(
+                      certificate.description,
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    const Divider(height: 32, color: Colors.white),
+                    Text(
+                      'เกียรติบัตร และรูปภาพกิจกรรม',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
                 ),
               ),
-            ],
+            ),
+          ),
+          if (certificate.imagesUrl.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  mainAxisSpacing: 32,
+                  crossAxisSpacing: 32,
+                  childAspectRatio: 4 / 3,
+                  maxCrossAxisExtent: 400,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _buildGalleryTile(
+                    context,
+                    certificate.imagesUrl[index],
+                    index,
+                  ),
+                  childCount: certificate.imagesUrl.length,
+                  addAutomaticKeepAlives: false,
+                ),
+              ),
+            ),
+          if (certificate.relatedProjects.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Divider(height: 48, color: Colors.white),
+                    Text(
+                      'โครงงานที่เกี่ยวข้อง',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: certificate.relatedProjects
+                          .take(5)
+                          .map(
+                            (project) => ProjectCard(
+                              project: project,
+                              returnPath: '/certificates/${certificate.id}',
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHero(
+    BuildContext context,
+    String imageUrl, {
+    Widget? overlayTitle,
+  }) {
+    final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
+    final image = OptimizedNetworkImage(
+      url: imageUrl,
+      fit: BoxFit.cover,
+      errorIconSize: 64,
+    );
+
+    if (isNarrowScreen) {
+      return SizedBox(
+        height: 360,
+        width: double.infinity,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black, Colors.transparent],
+                stops: [0.3, 1.0],
+              ).createShader(bounds),
+              blendMode: BlendMode.dstIn,
+              child: image,
+            ),
+            if (overlayTitle != null)
+              Positioned(top: 24, left: 24, right: 24, child: overlayTitle),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Center(
+        child: FractionallySizedBox(
+          widthFactor: 0.5,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: AspectRatio(aspectRatio: 16 / 9, child: image),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildImageLoadingCard(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(padding: const EdgeInsets.all(16), child: LoadingWidget()),
+  Widget _buildTitle(BuildContext context, CertificateModel certificate) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: Text(
+            certificate.name,
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+        if (certificate.isFeatured)
+          const Padding(
+            padding: EdgeInsets.only(left: 24),
+            child: Icon(Icons.star_rounded, color: Colors.yellow, size: 30),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildGalleryTile(BuildContext context, String imageUrl, int index) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Theme.of(context).cardColor,
+        child: InkWell(
+          onTap: () => _showImageViewer(context, imageUrl, index),
+          child: OptimizedNetworkImage(
+            url: imageUrl,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.low,
+            errorIconSize: 48,
+          ),
+        ),
+      ),
     );
   }
 
@@ -398,22 +363,12 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 4,
-                child: Image.network(
-                  imageUrl,
+                child: OptimizedNetworkImage(
+                  url: imageUrl,
                   fit: BoxFit.contain,
-                  frameBuilder:
-                      (context, child, frame, wasSynchronouslyLoaded) {
-                        if (wasSynchronouslyLoaded || frame != null) {
-                          return child;
-                        }
-
-                        return _buildImageLoadingCard(context);
-                      },
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Colors.white,
-                    size: 64,
-                  ),
+                  maxDecodeDimension: 3072,
+                  filterQuality: FilterQuality.high,
+                  errorIconSize: 64,
                 ),
               ),
             ),

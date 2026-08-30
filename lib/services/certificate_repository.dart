@@ -8,6 +8,8 @@ class CertificateRepository {
     : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
+  Future<List<CertificateModel>>? _certificatesCache;
+  Future<List<CertificateModel>>? _featuredCertificatesCache;
 
   Future<List<AwardCategories>> fetchAwardCategories({
     String table = 'award_categories',
@@ -31,10 +33,20 @@ class CertificateRepository {
 
   Future<List<CertificateModel>> fetchCertificates({
     String table = 'certificates',
-  }) async {
-    final query = _client.schema('public').from(table).select();
+  }) {
+    if (table == 'certificates') {
+      return _certificatesCache ??= _fetchCertificates(table);
+    }
 
-    final rows = await query.order('order_id', ascending: true);
+    return _fetchCertificates(table);
+  }
+
+  Future<List<CertificateModel>> _fetchCertificates(String table) async {
+    final rows = await _client
+        .schema('public')
+        .from(table)
+        .select()
+        .order('order_id', ascending: true);
     return _attachRelatedProjects(
       rows
           .whereType<Map>()
@@ -43,7 +55,11 @@ class CertificateRepository {
     );
   }
 
-  Future<List<CertificateModel>> fetchFeaturedCertificates() async {
+  Future<List<CertificateModel>> fetchFeaturedCertificates() {
+    return _featuredCertificatesCache ??= _fetchFeaturedCertificates();
+  }
+
+  Future<List<CertificateModel>> _fetchFeaturedCertificates() async {
     final rows = await _client
         .schema('public')
         .from('certificates')

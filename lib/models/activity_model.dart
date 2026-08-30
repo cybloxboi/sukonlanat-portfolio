@@ -1,13 +1,19 @@
+import 'package:sukonlanat_portfolio/utils/image_url.dart';
+
 class ActivityModel {
   factory ActivityModel.fromMap(Map<String, dynamic> map) {
     return ActivityModel(
       id: _string(map['id']),
       name: _string(map['name']),
       isFeatured: _bool(map['is_featured'] ?? map['isFeatured']),
-      backgroundUrl: _string(map['background_url'] ?? map['backgroundUrl']),
+      backgroundUrl: normalizeRemoteImageUrl(
+        map['background_url'] ?? map['backgroundUrl'],
+      ),
       description: _string(map['description']),
       organizer: _string(map['organizer']),
-      imagesUrl: _images(map['images_url'] ?? map['imagesUrl']),
+      imagesUrl: normalizeRemoteImageUrls(
+        map['images_url'] ?? map['imagesUrl'],
+      ),
       datePeriod: _string(map['date_period'] ?? map['datePeriod']),
       createdAt: DateTime.tryParse(_string(map['created_at'])),
     );
@@ -42,15 +48,5 @@ class ActivityModel {
     if (value is num) return value != 0;
 
     return _string(value).toLowerCase() == 'true';
-  }
-
-  static List<String> _images(Object? value) {
-    if (value is List) {
-      return value.map(_string).where((item) => item.isNotEmpty).toList();
-    }
-
-    final text = _string(value);
-
-    return text.isEmpty ? const [] : [text];
   }
 }

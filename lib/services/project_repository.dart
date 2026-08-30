@@ -6,15 +6,19 @@ class ProjectRepository {
     : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
+  Future<List<ProjectModel>>? _projectsCache;
+  Future<List<ProjectModel>>? _featuredProjectsCache;
   PostgrestFilterBuilder<PostgrestList> get query =>
       _client.schema('public').from('projects').select();
 
   Future<List<ProjectModel>> fetchProjects() async {
-    return _fetchProjects(query.order('order_id', ascending: true));
+    return _projectsCache ??= _fetchProjects(
+      query.order('order_id', ascending: true),
+    );
   }
 
   Future<List<ProjectModel>> fetchFeaturedProjects() async {
-    return _fetchProjects(
+    return _featuredProjectsCache ??= _fetchProjects(
       query.eq('is_featured', true).order('order_id', ascending: true),
     );
   }

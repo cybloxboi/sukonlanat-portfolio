@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sukonlanat_portfolio/widgets/optimized_network_image.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
   const AudioPlayerWidget({super.key});
@@ -138,8 +139,9 @@ class _AudioPlayerState extends State<AudioPlayerWidget> {
                                   },
                                   child: Row(
                                     children: [
-                                      Image.network(
-                                        Theme.of(context).brightness ==
+                                      OptimizedNetworkImage(
+                                        url:
+                                            Theme.of(context).brightness ==
                                                 Brightness.dark
                                             ? 'https://cdn.prod.website-files.com/62a0a0168756b795debc65bc/69ef2abb9234e119f18b3687_Cloudmark%20Minimum%20size.webp'
                                             : 'https://cdn.prod.website-files.com/62a0a0168756b795debc65bc/69ef2abbddd3c1d881b88ae0_Favicon%20Colors%20black%20(transparent)%20-%20download.webp',
@@ -148,6 +150,11 @@ class _AudioPlayerState extends State<AudioPlayerWidget> {
                                                 Brightness.dark
                                             ? 10
                                             : 35,
+                                        width: 35,
+                                        fit: BoxFit.contain,
+                                        maxDecodeDimension: 128,
+                                        filterQuality: FilterQuality.low,
+                                        errorIconSize: 16,
                                       ),
                                       const SizedBox(width: 8),
                                       Text('Listen on SoundCloud'),
