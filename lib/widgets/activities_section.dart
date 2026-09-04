@@ -97,10 +97,10 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
       physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
       cacheExtent: 500,
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 320,
-        mainAxisExtent: 360,
-        mainAxisSpacing: 32,
-        crossAxisSpacing: 16,
+        maxCrossAxisExtent: 450,
+        mainAxisExtent: 420,
+        mainAxisSpacing: 24,
+        crossAxisSpacing: 24,
       ),
       itemCount: activities.length,
       itemBuilder: (context, index) => ActivityCard(

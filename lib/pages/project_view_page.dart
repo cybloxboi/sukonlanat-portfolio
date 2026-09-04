@@ -59,7 +59,6 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
   }
 
   Widget _buildProject(BuildContext context, ProjectModel project) {
-    final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
     final links = <Widget>[
       if (project.projectUrl.isNotEmpty)
         FilledButton.icon(
@@ -84,15 +83,7 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
       body: CustomScrollView(
         cacheExtent: 400,
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildHero(
-              context,
-              project.backgroundUrl,
-              overlayTitle: isNarrowScreen
-                  ? _buildTitle(context, project)
-                  : null,
-            ),
-          ),
+          SliverToBoxAdapter(child: _buildHero(context, project.backgroundUrl)),
           SliverToBoxAdapter(
             child: Transform.translate(
               offset: Offset(0, 0),
@@ -101,7 +92,7 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (!isNarrowScreen) _buildTitle(context, project),
+                    _buildTitle(context, project),
                     if (project.date != null) ...[
                       const SizedBox(height: 12),
                       Text(
@@ -153,11 +144,7 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
     );
   }
 
-  Widget _buildHero(
-    BuildContext context,
-    String imageUrl, {
-    Widget? overlayTitle,
-  }) {
+  Widget _buildHero(BuildContext context, String imageUrl) {
     final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
 
     if (isNarrowScreen) {
@@ -181,8 +168,6 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
                 errorIconSize: 64,
               ),
             ),
-            if (overlayTitle != null)
-              Positioned(top: 24, left: 24, right: 24, child: overlayTitle),
           ],
         ),
       );
@@ -191,19 +176,16 @@ class _ProjectViewPageState extends State<ProjectViewPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Center(
-        child: FractionallySizedBox(
-          widthFactor: 0.5,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Card(
-              clipBehavior: Clip.antiAlias,
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: OptimizedNetworkImage(
-                  url: imageUrl,
-                  fit: BoxFit.cover,
-                  errorIconSize: 64,
-                ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: OptimizedNetworkImage(
+                url: imageUrl,
+                fit: BoxFit.cover,
+                errorIconSize: 64,
               ),
             ),
           ),

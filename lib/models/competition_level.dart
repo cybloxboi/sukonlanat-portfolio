@@ -55,7 +55,7 @@ class CompetitionLevel {
   static final Map<String, CompetitionLevel> presets = {
     nationalId: CompetitionLevel(
       id: nationalId,
-      name: 'ระดับประเทศ',
+      name: 'ระดับชาติ',
       color: Color(0xFF2563EB),
     ),
     regionalId: CompetitionLevel(

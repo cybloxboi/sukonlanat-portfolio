@@ -80,8 +80,6 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
   }
 
   Widget _buildCertificate(BuildContext context, CertificateModel certificate) {
-    final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: TemplateAppBar(returnPath: widget.returnPath),
@@ -89,81 +87,71 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
         cacheExtent: 400,
         slivers: [
           SliverToBoxAdapter(
-            child: _buildHero(
-              context,
-              certificate.backgroundUrl,
-              overlayTitle: isNarrowScreen
-                  ? _buildTitle(context, certificate)
-                  : null,
-            ),
+            child: _buildHero(context, certificate.backgroundUrl),
           ),
           SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: Offset(0, 0),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        if (!isNarrowScreen) _buildTitle(context, certificate),
-                        Wrap(
-                          runSpacing: 16,
-                          spacing: 16,
-                          children: [
-                            Chip(
-                              label: Text(
-                                certificate.awardCategories.name,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              backgroundColor:
-                                  certificate.awardCategories.color,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      Wrap(
+                        runSpacing: 16,
+                        spacing: 16,
+                        children: [
+                          Chip(
+                            label: Text(
+                              certificate.awardCategories.name,
+                              style: const TextStyle(color: Colors.white),
                             ),
-                            Chip(
-                              label: Text(
-                                certificate.competitionLevel.name,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              backgroundColor:
-                                  certificate.competitionLevel.color,
+                            backgroundColor: certificate.awardCategories.color,
+                          ),
+                          Chip(
+                            label: Text(
+                              certificate.competitionLevel.name,
+                              style: const TextStyle(color: Colors.white),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    if (certificate.datePeriod.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          'วันที่: ${certificate.datePeriod}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                            backgroundColor: certificate.competitionLevel.color,
+                          ),
+                        ],
                       ),
-                    Text(
-                      'ผู้จัด: ${certificate.organizer}',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    const Divider(height: 32, color: Colors.white),
-                    Text(
-                      certificate.description,
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                    const Divider(height: 32, color: Colors.white),
-                    Text(
-                      'เกียรติบัตร และรูปภาพกิจกรรม',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTitle(context, certificate),
+                  const SizedBox(height: 16),
+                  if (certificate.datePeriod.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'วันที่: ${certificate.datePeriod}',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                  Text(
+                    'ผู้จัด: ${certificate.organizer}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const Divider(height: 32, color: Colors.white),
+                  Text(
+                    certificate.description,
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                  const Divider(height: 32, color: Colors.white),
+                  Text(
+                    'เกียรติบัตร และรูปภาพกิจกรรม',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
           ),
@@ -228,11 +216,7 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
     );
   }
 
-  Widget _buildHero(
-    BuildContext context,
-    String imageUrl, {
-    Widget? overlayTitle,
-  }) {
+  Widget _buildHero(BuildContext context, String imageUrl) {
     final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
     final image = OptimizedNetworkImage(
       url: imageUrl,
@@ -257,8 +241,6 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
               blendMode: BlendMode.dstIn,
               child: image,
             ),
-            if (overlayTitle != null)
-              Positioned(top: 24, left: 24, right: 24, child: overlayTitle),
           ],
         ),
       );
@@ -267,14 +249,11 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Center(
-        child: FractionallySizedBox(
-          widthFactor: 0.5,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Card(
-              clipBehavior: Clip.antiAlias,
-              child: AspectRatio(aspectRatio: 16 / 9, child: image),
-            ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: AspectRatio(aspectRatio: 16 / 9, child: image),
           ),
         ),
       ),
@@ -312,11 +291,27 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
         color: Theme.of(context).cardColor,
         child: InkWell(
           onTap: () => _showImageViewer(context, imageUrl, index),
-          child: OptimizedNetworkImage(
-            url: imageUrl,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.low,
-            errorIconSize: 48,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Image.network(
+                imageUrl,
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                filterQuality: FilterQuality.low,
+                gaplessPlayback: true,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(Icons.image_not_supported_outlined),
+                  );
+                },
+              );
+            },
           ),
         ),
       ),
@@ -359,18 +354,36 @@ class _CertificateViewPageState extends State<CertificateViewPage> {
                 ),
               ),
             ),
-            body: Center(
-              child: InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4,
-                child: OptimizedNetworkImage(
-                  url: imageUrl,
-                  fit: BoxFit.contain,
-                  maxDecodeDimension: 3072,
-                  filterQuality: FilterQuality.high,
-                  errorIconSize: 64,
-                ),
-              ),
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                return SizedBox.expand(
+                  child: InteractiveViewer(
+                    constrained: false,
+                    alignment: Alignment.center,
+                    minScale: 0.1,
+                    maxScale: 8,
+                    panEnabled: true,
+                    scaleEnabled: true,
+                    child: Image.network(
+                      imageUrl,
+                      height: constraints.maxHeight,
+                      fit: BoxFit.fitHeight,
+                      alignment: Alignment.center,
+                      filterQuality: FilterQuality.high,
+                      gaplessPlayback: true,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.image_not_supported_outlined),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         );

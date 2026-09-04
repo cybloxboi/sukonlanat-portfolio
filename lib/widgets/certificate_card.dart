@@ -32,9 +32,8 @@ class CertificateCard extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  SizedBox(
-                    height: 180,
-                    width: double.infinity,
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
                     child: ColoredBox(
                       color: Colors.black12,
                       child: OptimizedNetworkImage(
@@ -60,7 +59,7 @@ class CertificateCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           certificate.description.trim(),
-                          maxLines: 4,
+                          maxLines: 3,
                           style: TextStyle(fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),

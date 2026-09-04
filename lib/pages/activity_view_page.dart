@@ -79,8 +79,6 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
   }
 
   Widget _buildActivity(BuildContext context, ActivityModel activity) {
-    final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: TemplateAppBar(returnPath: widget.returnPath),
@@ -88,13 +86,7 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
         cacheExtent: 400,
         slivers: [
           SliverToBoxAdapter(
-            child: _buildHero(
-              context,
-              activity.backgroundUrl,
-              overlayTitle: isNarrowScreen
-                  ? _buildTitle(context, activity)
-                  : null,
-            ),
+            child: _buildHero(context, activity.backgroundUrl),
           ),
           SliverToBoxAdapter(
             child: Transform.translate(
@@ -104,7 +96,7 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (!isNarrowScreen) _buildTitle(context, activity),
+                    _buildTitle(context, activity),
                     const SizedBox(height: 16),
                     if (activity.datePeriod.isNotEmpty)
                       Padding(
@@ -163,11 +155,7 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
     );
   }
 
-  Widget _buildHero(
-    BuildContext context,
-    String imageUrl, {
-    Widget? overlayTitle,
-  }) {
+  Widget _buildHero(BuildContext context, String imageUrl) {
     final isNarrowScreen = MediaQuery.sizeOf(context).width < 600;
     final image = OptimizedNetworkImage(
       url: imageUrl,
@@ -192,8 +180,6 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
               blendMode: BlendMode.dstIn,
               child: image,
             ),
-            if (overlayTitle != null)
-              Positioned(top: 24, left: 24, right: 24, child: overlayTitle),
           ],
         ),
       );
@@ -202,14 +188,11 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Center(
-        child: FractionallySizedBox(
-          widthFactor: 0.5,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Card(
-              clipBehavior: Clip.antiAlias,
-              child: AspectRatio(aspectRatio: 16 / 9, child: image),
-            ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: AspectRatio(aspectRatio: 16 / 9, child: image),
           ),
         ),
       ),
@@ -246,11 +229,27 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
         color: Theme.of(context).cardColor,
         child: InkWell(
           onTap: () => _showImageViewer(context, imageUrl, index),
-          child: OptimizedNetworkImage(
-            url: imageUrl,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.low,
-            errorIconSize: 48,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Image.network(
+                imageUrl,
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                filterQuality: FilterQuality.low,
+                gaplessPlayback: true,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(Icons.image_not_supported_outlined),
+                  );
+                },
+              );
+            },
           ),
         ),
       ),
@@ -293,18 +292,36 @@ class _ActivityViewPageState extends State<ActivityViewPage> {
                 ),
               ),
             ),
-            body: Center(
-              child: InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4,
-                child: OptimizedNetworkImage(
-                  url: imageUrl,
-                  fit: BoxFit.contain,
-                  maxDecodeDimension: 3072,
-                  filterQuality: FilterQuality.high,
-                  errorIconSize: 64,
-                ),
-              ),
+            body: LayoutBuilder(
+              builder: (context, constraints) {
+                return SizedBox.expand(
+                  child: InteractiveViewer(
+                    constrained: false,
+                    alignment: Alignment.center,
+                    minScale: 0.1,
+                    maxScale: 8,
+                    panEnabled: true,
+                    scaleEnabled: true,
+                    child: Image.network(
+                      imageUrl,
+                      height: constraints.maxHeight,
+                      fit: BoxFit.fitHeight,
+                      alignment: Alignment.center,
+                      filterQuality: FilterQuality.high,
+                      gaplessPlayback: true,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.image_not_supported_outlined),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         );
