@@ -16,6 +16,7 @@ class CertificateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
@@ -28,6 +29,7 @@ class CertificateCard extends StatelessWidget {
         },
         child: SizedBox(
           width: 320,
+          height: 360,
           child: Stack(
             children: [
               Column(
@@ -43,27 +45,43 @@ class CertificateCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Text(
-                          certificate.name,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        const Divider(),
-                        const SizedBox(height: 4),
-                        Text(
-                          certificate.description.trim(),
-                          maxLines: 3,
-                          style: TextStyle(fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Text(
+                            certificate.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          const Divider(),
+                          const SizedBox(height: 4),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final maxLines = (constraints.maxHeight / 15)
+                                    .floor()
+                                    .clamp(1, 1000)
+                                    .toInt();
+
+                                return Text(
+                                  certificate.description.trim(),
+                                  maxLines: maxLines,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    height: 1.2,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
